@@ -4,8 +4,52 @@
 
 {% block title %}Home{% endblock title %}
 
+{% block css %}
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock css %}
+
 {% block body %}
 
-<h1>Home</h1>
+<!-- <h1>Sýmpan | σύμπαν</h1> -->
+<div class="container d-flex justify-content-center align-items-center main-container">
+    <div class="row">
+        <div class="col d-flex justify-content-center align-items-center logo-container">
+            <div class="container">
+                <img src="{% static 'img/favicon/logo.png' %}" class="img-fluid" alt="SimPan">
+            </div>
+        </div>
+        <div class="col d-flex justify-content-center align-items-center content-container">
+            <div class="card text-center mx-5 card-container" id="card-container">
+                <div class="card-header">
+                    Under development
+                </div>
+                <div class="card-body">
+                    <h1 class="card-title">SimPan | σύμπαν</h1>
+                    <p class="card-text" >&nbsp;&nbsp;&nbsp;&nbsp;SimPan emerges as a pioneering application designed to revolutionize the creation and
+                        analysis of 3D worlds with AI
+                        support in the rapidly evolving domain of simulation technology and ML model development. This web-based
+                        platform would
+                        leverage artificial intelligence to facilitate the swift growth of highly detailed and realistic 3D
+                        environments. Aimed
+                        at reducing the technical barriers typically associated with simulation creation, SimPan offers an intuitive
+                        user
+                        interface that abstracts the complexities of coding, thereby significantly accelerating the development
+                        cycle. SimPan is
+                        not just a tool for visualizing 3D worlds but also will serve as a comprehensive ecosystem for simulating
+                        events,
+                        formulating behavioral models, pipelining various ML models, and annotating datasets across multiple
+                        domains. Stay tuned
+                        for updates!</p>
+                    <a href="{% url 'comfyui:comfyui' %}" class="btn btn-primary">Go to SimPan</a>
+                </div>
+                <div class="card-footer text-body-secondary">
+                    <a href="https://github.com/NikhilKamathB/SimPan" target="_blank">
+                        <i class="uil uil-github-alt"></i> Github
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock body %}

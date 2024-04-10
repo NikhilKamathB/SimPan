@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}ComfyUI{% endblock title %}
+
+{% block css %}
+    <link rel="stylesheet" href="{% static 'css/litegraph.css' %}">
+    <link rel="stylesheet" href="{% static 'css/comfyui.css' %}">
+{% endblock css %}
+
+{% block body %}
+
+<canvas class='ui-canvas' id="ui-canvas"></canvas>
+
+{% block js %}
+    <script src="{% static 'js/litegraph.js' %}"></script>
+    <script type="module" src="{% static 'js/comfyui.js' %}"></script>
+{% endblock js %}
+
+{% endblock body %}

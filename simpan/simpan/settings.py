@@ -18,7 +18,6 @@ load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-print(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -39,6 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Apps
+    'home.apps.HomeConfig',
+    'comfyui.apps.ComfyuiConfig',
 ]
 
 MIDDLEWARE = [
@@ -140,17 +143,60 @@ STATICFILES_DIRS = [
 ]
 STATIC_ROOT = os.getenv('STATIC_ROOT', "dist")
 
-# Add litegraph.js to static files
-STATICFILES_DIRS += [BASE_DIR / ".." /
-                     "third_party" / "litegraph" / "build"]  # js files
-STATICFILES_DIRS += [BASE_DIR / ".." /
-                     "third_party" / "litegraph" / "css"]  # css files
-
 # Media handling.
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Django Logging
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "[{levelname}] | [{asctime}] | [{module}] | [{process:d}] | [{thread:d}] | {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "[{levelname}] | [{asctime}] | [{module}] | {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "file": {
+            "level": os.getenv("LOG_LEVEL", "INFO"),
+            "class": "logging.FileHandler",
+            "filename": "django.log",
+            "formatter": "verbose",
+        },
+        "console": {
+            "level": os.getenv("LOG_LEVEL", "INFO"),
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["file", "console"],
+            "level": os.getenv("LOG_LEVEL", "INFO"),
+            "propagate": True,
+        },
+        "home": {
+            "handlers": ["file", "console"],
+            "level": os.getenv("LOG_LEVEL", "INFO"),
+            "propagate": True,
+        },
+        "comfyui": {
+            "handlers": ["file", "console"],
+            "level": os.getenv("LOG_LEVEL", "INFO"),
+            "propagate": True,
+        },
+    },
+}
+
+# GIT Submodules
+SUBMODULES_DIR = BASE_DIR / ".." / "third_party"
+LITEGRAPH_DIR = "litegraph"

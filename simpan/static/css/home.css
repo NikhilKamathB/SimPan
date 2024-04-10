@@ -1,0 +1,36 @@
+.main-container {
+    width: 100vh;
+}
+
+.logo-container, .content-container {
+    width: 100vw;
+}
+
+.content-container {
+    height: 100vh;
+    border-left: var(--default-border-thickness) solid var(--first-color);
+    border-radius: var(--default-border-radius) 0 0 var(--default-border-radius);
+}
+
+.card-header:first-child {
+    border-radius: var(--default-border-radius) var(--default-border-radius) 0 0;
+}
+
+.card-footer:last-child {
+    border-radius: 0 0 var(--default-border-radius) var(--default-border-radius);
+}
+
+.card-container {
+    margin: auto;
+    border-radius: var(--default-border-radius);
+    transition: box-shadow 0.5s ease, transform 0.5s ease;
+}
+
+.card-container:hover {
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2%);
+}
+
+.card-text {
+    text-align: justify;
+}
