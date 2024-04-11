@@ -20,3 +20,27 @@ function initCanvas() {
 
 initCanvas(); // Initial call
 /*=========================================================*/
+
+/*======================= Add Node ========================*/
+// class MultiplyNode extends LGraphNode {
+
+//     constructor() {
+//         super();
+//         this.addInput("A", "number");
+//         this.addInput("B", "number");
+//         this.addOutput("A*B", "number");
+//     }
+
+//     onExecute() {
+//         var A = this.getInputData(0);
+//         var B = this.getInputData(1);
+//         if (A != null && B != null) {
+//             this.setOutputData(0, A * B);
+//         } else {
+//             this.setOutputData(0, null);
+//         }
+//     }
+// }
+
+// LiteGraph.registerNodeType("3D Vision/multiply", MultiplyNode);
+/*=========================================================*/
