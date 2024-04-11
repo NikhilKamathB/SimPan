@@ -5,6 +5,7 @@
 *.png
 !**/backup/**
 !**/static/**
+**/static/*/litegraph*
 
 
 ### Django ###
