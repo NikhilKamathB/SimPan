@@ -1,3 +1,5 @@
+import { getCookie } from "./utils.js";
+
 /*======================= Keep specific nodes ========================*/
 function keepSpecificNodes(keepTypes) {
     // Handle registered node types
@@ -12,6 +14,35 @@ function keepSpecificNodes(keepTypes) {
     }
     // Handle search box | Search box extras will contain only the custom built nodes
     LiteGraph.searchbox_extras = {};
+}
+/*=====================================================================*/
+
+/*============== Add Environment specefic nodes here ==================*/
+class PythonExecNode extends LGraphNode {
+
+    constructor() {
+        super();
+        this.title = "Python Exec";
+        this.addOutput("Venv", "string");
+        this.addOutput("Script", "string");
+        this.properties = {
+            venv: "./venv/bin/activate",
+            script: "./script.py",
+        };
+        this.addWidget("text", "Venv", this.properties.venv, value => {
+            this.properties.venv = value;
+        });
+        this.addWidget("text", "Script", this.properties.script, value => {
+            this.properties.script = value;
+        });
+        this.size = [250, 100];
+    }
+
+    onExecute() {
+        this.setOutputData(0, this.properties.venv);
+        this.setOutputData(1, this.properties.script);
+        alert("Python execution started.");
+    }
 }
 /*=====================================================================*/
 
@@ -48,6 +79,7 @@ class ActorGeneratorNode extends LGraphNode {
     }
 
     onExecute() {
+        alert("Actor generation started.");
         if (this.properties.byPass) {
             this.setOutputData(0, null);
         }
@@ -62,6 +94,8 @@ class SyntheticDataGenerator extends LGraphNode {
     constructor() {
         super();
         this.title = "Synthetic Data Generator";
+        this.addInput("Venv", "string");
+        this.addInput("Script", "string");
         this.addInput("Vehicle Configuration Directory", "string");
         this.addInput("Pedestrian Configuration Directory", "string");
         this.addOutput("Output Directory", "string");
@@ -173,27 +207,68 @@ class SyntheticDataGenerator extends LGraphNode {
         });
         this.addWidget("button", "Generate Synthethic Data", null, () => {
             if (this.graph) {
-                this.graph.start();
-                this.setOutputData(0, this.getInputData(0));
+                this.graph.runStep();
             }
         });
-        this.size = [500, 700];
+        this.size = [500, 740];
     }
 
     onExecute() {
-        if (this.properties.byPass) {
-            this.setOutputData(0, null);
-        }
-        else {
-            this.setOutputData(0, this.properties.outputDirectory);
-        }
+        const csrftoken = getCookie('csrftoken');
+        $.ajax({
+            async: false,
+            url: "/comfyui/carla/synthetic-data-generator/",
+            method: "POST",
+            headers: { 'X-CSRFToken': csrftoken },
+            dataType: "json",
+            data: {
+                venv: this.getInputData(0),
+                script: this.getInputData(1),
+                vehicleConfigurationDirectory: this.getInputData(2),
+                pedestrianConfigurationDirectory: this.getInputData(3),
+                hostname: this.properties.hostname,
+                port: this.properties.port,
+                carlaClientTimeout: this.properties.carlaClientTimeout,
+                synchronous: this.properties.synchronous,
+                fixedDeltaSeconds: this.properties.fixedDeltaSeconds,
+                tmPort: this.properties.tmPort,
+                tmHybridPhysicsMode: this.properties.tmHybridPhysicsMode,
+                tmHybridPhysicsModeRadius: this.properties.tmHybridPhysicsModeRadius,
+                tmGlobalDistanceToLeadingVehicle: this.properties.tmGlobalDistanceToLeadingVehicle,
+                tmSeed: this.properties.tmSeed,
+                rfps: this.properties.rfps,
+                spectatorEnable: this.properties.spectatorEnable,
+                spectatorAttachmentMode: this.properties.spectatorAttachmentMode,
+                spectatorLocationOffsetX: this.properties.spectatorLocationOffsetX,
+                spectatorLocationOffsetY: this.properties.spectatorLocationOffsetY,
+                spectatorLocationOffsetZ: this.properties.spectatorLocationOffsetZ,
+                spectatorRotationPitch: this.properties.spectatorRotationPitch,
+                spectatorRotationYaw: this.properties.spectatorRotationYaw,
+                spectatorRotationRoll: this.properties.spectatorRotationRoll,
+                maxSimulationTime: this.properties.maxSimulationTime,
+                maxVehicles: this.properties.maxVehicles,
+                maxPedestrians: this.properties.maxPedestrians,
+                map: this.properties.map,
+                mapDirectory: this.properties.mapDirectory,
+                worldConfigFile: this.properties.worldConfigFile,
+                outputDirectory: this.properties.outputDirectory
+            },
+            success: response => {
+                this.setOutputData(0, this.properties.outputDirectory);
+                alert("Synthetic data generated successfully.");
+            },
+            error: (xhr, status, error) => {
+                alert("An error occurred while generating synthetic data.");
+            }
+        });
     }
 }
 /*=====================================================================*/
 
 /*======================= Execute pre-commits =========================*/
 function executePreCommits() {
-    keepSpecificNodes([]);
+    keepSpecificNodes();
+    LiteGraph.registerNodeType("Environment/Python Exec Config", PythonExecNode);
     LiteGraph.registerNodeType("Carla/Actor Generator", ActorGeneratorNode);
     LiteGraph.registerNodeType("Carla/Synthetic Data Generator", SyntheticDataGenerator);
 }
