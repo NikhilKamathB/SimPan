@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -198,5 +199,8 @@ LOGGING = {
 }
 
 # GIT Submodules
-SUBMODULES_DIR = BASE_DIR / ".." / "third_party"
+GIT_SUBMODULES_DIR = ".."
+sys.path.append(GIT_SUBMODULES_DIR)
+SUBMODULES_DIR = BASE_DIR / GIT_SUBMODULES_DIR / "third_party"
 LITEGRAPH_DIR = "litegraph"
+SDC_DIR = "SDC"
