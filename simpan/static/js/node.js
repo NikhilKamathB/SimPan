@@ -18,32 +18,6 @@ function keepSpecificNodes(keepTypes) {
 /*=====================================================================*/
 
 /*============== Add Environment specefic nodes here ==================*/
-class PythonExecNode extends LGraphNode {
-
-    constructor() {
-        super();
-        this.title = "Python Exec";
-        this.addOutput("Venv", "string");
-        this.addOutput("Script", "string");
-        this.properties = {
-            venv: "./venv/bin/activate",
-            script: "./script.py",
-        };
-        this.addWidget("text", "Venv", this.properties.venv, value => {
-            this.properties.venv = value;
-        });
-        this.addWidget("text", "Script", this.properties.script, value => {
-            this.properties.script = value;
-        });
-        this.size = [250, 100];
-    }
-
-    onExecute() {
-        this.setOutputData(0, this.properties.venv);
-        this.setOutputData(1, this.properties.script);
-        alert("Python execution started.");
-    }
-}
 /*=====================================================================*/
 
 /*======================= Add Carla nodes here ========================*/
@@ -56,8 +30,8 @@ class ActorGeneratorNode extends LGraphNode {
         this.properties = {
             actorType: "vehicle",
             numberOfActors: 0,
-            referenceSourceFile: "",
-            outputDirectory: "",
+            referenceSourceFile: "/home/tyche/nikhil/SDC/data/config/vehicles/vehicle0.yaml",
+            outputDirectory: "/home/tyche/nikhil/SDC/data/config/vehicles",
             byPass: true
         };
         this.addWidget("combo", "Actor Type", this.properties.actorType, value => {
@@ -79,13 +53,33 @@ class ActorGeneratorNode extends LGraphNode {
     }
 
     onExecute() {
-        alert("Actor generation started.");
-        if (this.properties.byPass) {
-            this.setOutputData(0, null);
-        }
-        else {
-            this.setOutputData(0, this.properties.outputDirectory);
-        }
+        const csrftoken = getCookie('csrftoken');
+        $.ajax({
+            async: false,
+            timeout: 0,
+            url: "/comfyui/carla/actor-generator/",
+            method: "POST",
+            headers: { 'X-CSRFToken': csrftoken },
+            contentType: "application/json",
+            dataType: "json",
+            data: JSON.stringify({
+                actor_type: this.properties.actorType,
+                number_of_actors: this.properties.numberOfActors,
+                reference_config_file: this.properties.referenceSourceFile,
+                config_dir: this.properties.outputDirectory,
+                by_pass: this.properties.byPass
+            }),
+            success: response => {
+                this.setOutputData(0, this.properties.outputDirectory);
+                alert("Actor generated successfully.");
+            },
+            error: (xhr, status, error) => {
+                console.log(xhr);
+                console.log(status);
+                console.log(error);
+                alert("An error occurred while generating actor.");
+            }
+        });
     }
 }
 
@@ -94,8 +88,6 @@ class SyntheticDataGenerator extends LGraphNode {
     constructor() {
         super();
         this.title = "Synthetic Data Generator";
-        this.addInput("Venv", "string");
-        this.addInput("Script", "string");
         this.addInput("Vehicle Configuration Directory", "string");
         this.addInput("Pedestrian Configuration Directory", "string");
         this.addOutput("Output Directory", "string");
@@ -105,7 +97,7 @@ class SyntheticDataGenerator extends LGraphNode {
             carlaClientTimeout: 10.0,
             synchronous: true,
             fixedDeltaSeconds: 0.05,
-            tmPort: 8000,
+            tmPort: 8001,
             tmHybridPhysicsMode: true,
             tmHybridPhysicsModeRadius: 70.0,
             tmGlobalDistanceToLeadingVehicle: 2.5,
@@ -123,9 +115,11 @@ class SyntheticDataGenerator extends LGraphNode {
             maxVehicles: 50,
             maxPedestrians: 100,
             map: "Town01",
-            mapDirectory: "",
-            worldConfigFile: "",
-            outputDirectory: ""
+            mapDirectory: "/Game/Carla/Maps",
+            worldConfigFile: "/home/tyche/nikhil/SDC/data/config/town01_default.yaml",
+            outputDirectory: "/home/tyche/nikhil/SDC/data/raw",
+            vechile_config_dir: "/home/tyche/nikhil/SDC/data/config/vehicles",
+            pedestrian_config_dir: "/home/tyche/nikhil/SDC/data/config/pedestrians"
         };
         this.addWidget("text", "Hostname", this.properties.hostname, value => {
             this.properties.hostname = value;
@@ -210,7 +204,7 @@ class SyntheticDataGenerator extends LGraphNode {
                 this.graph.runStep();
             }
         });
-        this.size = [500, 740];
+        this.size = [500, 700];
     }
 
     onExecute() {
@@ -219,46 +213,46 @@ class SyntheticDataGenerator extends LGraphNode {
             async: false,
             url: "/comfyui/carla/synthetic-data-generator/",
             method: "POST",
+            timeout: 0,
             headers: { 'X-CSRFToken': csrftoken },
+            contentType: "application/json",
             dataType: "json",
-            data: {
-                venv: this.getInputData(0),
-                script: this.getInputData(1),
-                vehicleConfigurationDirectory: this.getInputData(2),
-                pedestrianConfigurationDirectory: this.getInputData(3),
+            data: JSON.stringify({
+                vechile_config_dir: this.getInputData(0) === null ? this.properties.vechile_config_dir : this.getInputData(0),
+                pedestrian_config_dir: this.getInputData(1) === null ? this.properties.pedestrian_config_dir : this.getInputData(1),
                 hostname: this.properties.hostname,
                 port: this.properties.port,
-                carlaClientTimeout: this.properties.carlaClientTimeout,
+                carla_client_timeout: this.properties.carlaClientTimeout,
                 synchronous: this.properties.synchronous,
-                fixedDeltaSeconds: this.properties.fixedDeltaSeconds,
-                tmPort: this.properties.tmPort,
-                tmHybridPhysicsMode: this.properties.tmHybridPhysicsMode,
-                tmHybridPhysicsModeRadius: this.properties.tmHybridPhysicsModeRadius,
-                tmGlobalDistanceToLeadingVehicle: this.properties.tmGlobalDistanceToLeadingVehicle,
-                tmSeed: this.properties.tmSeed,
+                fixed_delta_seconds: this.properties.fixedDeltaSeconds,
+                tm_port: this.properties.tmPort,
+                tm_hybrid_physics_mode: this.properties.tmHybridPhysicsMode,
+                tm_hybrid_physics_radius: this.properties.tmHybridPhysicsModeRadius,
+                tm_global_distance_to_leading_vehicle: this.properties.tmGlobalDistanceToLeadingVehicle,
+                tm_seed: this.properties.tmSeed,
                 rfps: this.properties.rfps,
-                spectatorEnable: this.properties.spectatorEnable,
-                spectatorAttachmentMode: this.properties.spectatorAttachmentMode,
-                spectatorLocationOffsetX: this.properties.spectatorLocationOffsetX,
-                spectatorLocationOffsetY: this.properties.spectatorLocationOffsetY,
-                spectatorLocationOffsetZ: this.properties.spectatorLocationOffsetZ,
-                spectatorRotationPitch: this.properties.spectatorRotationPitch,
-                spectatorRotationYaw: this.properties.spectatorRotationYaw,
-                spectatorRotationRoll: this.properties.spectatorRotationRoll,
-                maxSimulationTime: this.properties.maxSimulationTime,
-                maxVehicles: this.properties.maxVehicles,
-                maxPedestrians: this.properties.maxPedestrians,
+                spectator_enabled: this.properties.spectatorEnable,
+                spectator_attachment_mode: this.properties.spectatorAttachmentMode,
+                spectator_location_offset_x: this.properties.spectatorLocationOffsetX,
+                spectator_location_offset_y: this.properties.spectatorLocationOffsetY,
+                spectator_location_offset_z: this.properties.spectatorLocationOffsetZ,
+                spectator_rotation_pitch: this.properties.spectatorRotationPitch,
+                spectator_rotation_yaw: this.properties.spectatorRotationYaw,
+                spectator_rotation_roll: this.properties.spectatorRotationRoll,
+                max_simulation_time: this.properties.maxSimulationTime,
+                max_vechiles: this.properties.maxVehicles,
+                max_pedestrians: this.properties.maxPedestrians,
                 map: this.properties.map,
-                mapDirectory: this.properties.mapDirectory,
-                worldConfigFile: this.properties.worldConfigFile,
-                outputDirectory: this.properties.outputDirectory
-            },
+                map_dir: this.properties.mapDirectory,
+                world_configuration: this.properties.worldConfigFile,
+                output_directory: this.properties.outputDirectory
+            }),
             success: response => {
                 this.setOutputData(0, this.properties.outputDirectory);
                 alert("Synthetic data generated successfully.");
             },
             error: (xhr, status, error) => {
-                alert("An error occurred while generating synthetic data.");
+               alert("An error occurred while generating synthetic data.");
             }
         });
     }
@@ -268,7 +262,6 @@ class SyntheticDataGenerator extends LGraphNode {
 /*======================= Execute pre-commits =========================*/
 function executePreCommits() {
     keepSpecificNodes();
-    LiteGraph.registerNodeType("Environment/Python Exec Config", PythonExecNode);
     LiteGraph.registerNodeType("Carla/Actor Generator", ActorGeneratorNode);
     LiteGraph.registerNodeType("Carla/Synthetic Data Generator", SyntheticDataGenerator);
 }

@@ -20,6 +20,9 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Add to path the main project directory.
+sys.path.append(str(BASE_DIR.parent)) # String representation of the posix path.
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -152,6 +155,19 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Celery with rabbitmq configuration.
+'''
+To install rabbitmq using docker:
+docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3.13-management
+
+http://host:15672 will show the rabbitmq management console.
+http://host:5555 will show the flower monitoring console.
+
+To have the celery worker running:
+    1. Queue - `sdc_q`: celery -A sdc worker -l info -Q sdc_q
+'''
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "amqp://guest:guest@localhost:5672//")
+
 # Django Logging
 LOGGING = {
     "version": 1,
@@ -199,8 +215,6 @@ LOGGING = {
 }
 
 # GIT Submodules
-GIT_SUBMODULES_DIR = ".."
-sys.path.append(GIT_SUBMODULES_DIR)
-SUBMODULES_DIR = BASE_DIR / GIT_SUBMODULES_DIR / "third_party"
-LITEGRAPH_DIR = "litegraph"
-SDC_DIR = "SDC"
+SUBMODULES_DIR = BASE_DIR.parent / os.getenv("SUBMODULES_DIR", "third_party")
+LITEGRAPH_DIR = os.getenv("LITEGRAPH_DIR", "litegraph")
+SDC_DIR = os.getenv("SDC_DIR", "SDC")
