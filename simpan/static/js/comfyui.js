@@ -13,7 +13,6 @@ resizeCanvas(); // Initial call
 
 /*==================== Initalize Canvas ====================*/
 function initCanvas() {
-    var canvas = document.getElementById('ui-canvas');
     var graph = new LGraph();
     var canvas = new LGraphCanvas("#ui-canvas", graph);
 }

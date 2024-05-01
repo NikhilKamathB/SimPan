@@ -15,11 +15,19 @@ class ActorType(Enum):
     PEDESTRIAN = "pedestrian"
 
 
-class WorkerResponseValidator(BaseModel):
+class ExchangeName(Enum):
 
-    status: Status = Status.OK
-    message: Optional[str] = None
-    body: Optional[dict] = None
+    SDC = "sdc"
+
+
+class QueueName(Enum):
+
+    SDC = "sdc"
+
+
+class RoutingKey(Enum):
+
+    SDC = "sdc_routing_key"
 
 
 class ActorGeneratorValidator(BaseModel):

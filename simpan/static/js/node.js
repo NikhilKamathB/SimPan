@@ -1,4 +1,4 @@
-import { getCookie } from "./utils.js";
+import { getCookie, VehicleType } from "./utils.js";
 
 /*======================= Keep specific nodes ========================*/
 function keepSpecificNodes(keepTypes) {
@@ -17,18 +17,56 @@ function keepSpecificNodes(keepTypes) {
 }
 /*=====================================================================*/
 
-/*============== Add Environment specefic nodes here ==================*/
+/*================== Add Global variables here ========================*/
+var GRAPH_PIPELINE_RUNNING = false;
 /*=====================================================================*/
 
+/*================= Add Generic nodes here ============================*/
+class CustomLGraphNode extends LGraphNode {
+
+    constructor() {
+        super();
+        this.running = false;
+    }
+}
+class PromptNode extends CustomLGraphNode {
+
+    constructor() {
+        super();
+        this.title = "Prompt";
+        this.addOutput("prompt", LiteGraph.EVENT);
+        this.addWidget("button", "Prompt", null, () => {
+            for (let node of this.graph._nodes) {
+                if (node.running) {
+                    alert("Pipeline is already running. Please wait for the current pipeline to finish.");
+                    return;
+                }
+            }
+            this.onExecute();
+        });
+        this.size = [200, 60];
+    }
+
+    onExecute() {
+        GRAPH_PIPELINE_RUNNING = true;
+        this.trigger("prompt");
+    }
+
+}
+/*=====================================================================*/
+
+
 /*======================= Add Carla nodes here ========================*/
-class ActorGeneratorNode extends LGraphNode {
+class ActorGeneratorNode extends CustomLGraphNode {
 
     constructor() {
         super();
         this.title = "Actor Generator";
-        this.addOutput("Output Directory", "string");
+        this.addInput("promptTrigger", LiteGraph.ACTION);
+        this.addOutput("output directory", "string");
+        this.addOutput("onActorGeneration", LiteGraph.EVENT);
         this.properties = {
-            actorType: "vehicle",
+            actorType: VehicleType.VEHICLE,
             numberOfActors: 0,
             referenceSourceFile: "/home/tyche/nikhil/SDC/data/config/vehicles/vehicle0.yaml",
             outputDirectory: "/home/tyche/nikhil/SDC/data/config/vehicles",
@@ -36,7 +74,7 @@ class ActorGeneratorNode extends LGraphNode {
         };
         this.addWidget("combo", "Actor Type", this.properties.actorType, value => {
             this.properties.actorType = value;
-        }, { values: ["vehicle", "pedestrian"] });
+        }, { values: [VehicleType.VEHICLE, VehicleType.PEDESTRIAN] });
         this.addWidget("number", "Number of Actors", this.properties.numberOfActors, value => {
             this.properties.numberOfActors = value;
         }, { min: 0, max: 100, step: 10, precision: 0 });
@@ -49,13 +87,18 @@ class ActorGeneratorNode extends LGraphNode {
         this.addWidget("toggle", "By Pass", this.properties.byPass, value => {
             this.properties.byPass = value;
         });
-        this.size = [500, 150];
+        this.size = [500, 175];
+        this.mode = LiteGraph.ON_TRIGGER;
+    }
+
+    onAction(action, param) {
+        console.log("Action 1: ", action, param);
     }
 
     onExecute() {
         const csrftoken = getCookie('csrftoken');
+        this.running = true;
         $.ajax({
-            async: false,
             timeout: 0,
             url: "/comfyui/carla/actor-generator/",
             method: "POST",
@@ -68,29 +111,34 @@ class ActorGeneratorNode extends LGraphNode {
                 reference_config_file: this.properties.referenceSourceFile,
                 config_dir: this.properties.outputDirectory,
                 by_pass: this.properties.byPass
-            }),
-            success: response => {
-                this.setOutputData(0, this.properties.outputDirectory);
-                alert("Actor generated successfully.");
-            },
-            error: (xhr, status, error) => {
-                console.log(xhr);
-                console.log(status);
-                console.log(error);
-                alert("An error occurred while generating actor.");
-            }
+            })
+        })
+        .done((data, textStatus, jqXHR) => {
+            this.setOutputData(0, this.properties.outputDirectory);
+            alert("Actor generated successfully.");
+            this.trigger("onActorGeneration", this.properties.numberOfActors);
+        })
+        .fail((jqXHR, textStatus, errorThrown) => {
+            alert("An error occurred while generating actor.");
+        })
+        .always(() => {
+            this.running = false;
         });
     }
 }
 
-class SyntheticDataGenerator extends LGraphNode {
+class SyntheticDataGenerator extends CustomLGraphNode {
 
     constructor() {
         super();
         this.title = "Synthetic Data Generator";
         this.addInput("Vehicle Configuration Directory", "string");
         this.addInput("Pedestrian Configuration Directory", "string");
+        this.addInput("vehicleTrigger", LiteGraph.ACTION);
+        this.addInput("pedestrianTrigger", LiteGraph.ACTION);
         this.addOutput("Output Directory", "string");
+        this.triggerCount = 0;
+        this.minTriggerCountToExecute = 2;
         this.properties = {
             hostname: "localhost",
             port: 2000,
@@ -199,62 +247,65 @@ class SyntheticDataGenerator extends LGraphNode {
         this.addWidget("text", "Output Directory", this.properties.outputDirectory, value => {
             this.properties.outputDirectory = value;
         });
-        this.addWidget("button", "Generate Synthethic Data", null, () => {
-            if (this.graph) {
-                this.graph.runStep();
-            }
-        });
-        this.size = [500, 700];
+        this.size = [500, 725];
+        this.mode = LiteGraph.ON_TRIGGER;
     }
 
     onExecute() {
-        const csrftoken = getCookie('csrftoken');
-        $.ajax({
-            async: false,
-            url: "/comfyui/carla/synthetic-data-generator/",
-            method: "POST",
-            timeout: 0,
-            headers: { 'X-CSRFToken': csrftoken },
-            contentType: "application/json",
-            dataType: "json",
-            data: JSON.stringify({
-                vechile_config_dir: this.getInputData(0) === null ? this.properties.vechile_config_dir : this.getInputData(0),
-                pedestrian_config_dir: this.getInputData(1) === null ? this.properties.pedestrian_config_dir : this.getInputData(1),
-                hostname: this.properties.hostname,
-                port: this.properties.port,
-                carla_client_timeout: this.properties.carlaClientTimeout,
-                synchronous: this.properties.synchronous,
-                fixed_delta_seconds: this.properties.fixedDeltaSeconds,
-                tm_port: this.properties.tmPort,
-                tm_hybrid_physics_mode: this.properties.tmHybridPhysicsMode,
-                tm_hybrid_physics_radius: this.properties.tmHybridPhysicsModeRadius,
-                tm_global_distance_to_leading_vehicle: this.properties.tmGlobalDistanceToLeadingVehicle,
-                tm_seed: this.properties.tmSeed,
-                rfps: this.properties.rfps,
-                spectator_enabled: this.properties.spectatorEnable,
-                spectator_attachment_mode: this.properties.spectatorAttachmentMode,
-                spectator_location_offset_x: this.properties.spectatorLocationOffsetX,
-                spectator_location_offset_y: this.properties.spectatorLocationOffsetY,
-                spectator_location_offset_z: this.properties.spectatorLocationOffsetZ,
-                spectator_rotation_pitch: this.properties.spectatorRotationPitch,
-                spectator_rotation_yaw: this.properties.spectatorRotationYaw,
-                spectator_rotation_roll: this.properties.spectatorRotationRoll,
-                max_simulation_time: this.properties.maxSimulationTime,
-                max_vechiles: this.properties.maxVehicles,
-                max_pedestrians: this.properties.maxPedestrians,
-                map: this.properties.map,
-                map_dir: this.properties.mapDirectory,
-                world_configuration: this.properties.worldConfigFile,
-                output_directory: this.properties.outputDirectory
-            }),
-            success: response => {
+        ++this.triggerCount;
+        this.running = true;
+        if (this.triggerCount === this.minTriggerCountToExecute) {
+            const csrftoken = getCookie('csrftoken');
+            $.ajax({
+                url: "/comfyui/carla/synthetic-data-generator/",
+                method: "POST",
+                timeout: 0,
+                headers: { 'X-CSRFToken': csrftoken },
+                contentType: "application/json",
+                dataType: "json",
+                data: JSON.stringify({
+                    vechile_config_dir: this.getInputData(0) === null || this.getInputData(0) === undefined ? this.properties.vechile_config_dir : this.getInputData(0),
+                    pedestrian_config_dir: this.getInputData(1) === null || this.getInputData(1) === undefined ? this.properties.pedestrian_config_dir : this.getInputData(1),
+                    hostname: this.properties.hostname,
+                    port: this.properties.port,
+                    carla_client_timeout: this.properties.carlaClientTimeout,
+                    synchronous: this.properties.synchronous,
+                    fixed_delta_seconds: this.properties.fixedDeltaSeconds,
+                    tm_port: this.properties.tmPort,
+                    tm_hybrid_physics_mode: this.properties.tmHybridPhysicsMode,
+                    tm_hybrid_physics_radius: this.properties.tmHybridPhysicsModeRadius,
+                    tm_global_distance_to_leading_vehicle: this.properties.tmGlobalDistanceToLeadingVehicle,
+                    tm_seed: this.properties.tmSeed,
+                    rfps: this.properties.rfps,
+                    spectator_enabled: this.properties.spectatorEnable,
+                    spectator_attachment_mode: this.properties.spectatorAttachmentMode,
+                    spectator_location_offset_x: this.properties.spectatorLocationOffsetX,
+                    spectator_location_offset_y: this.properties.spectatorLocationOffsetY,
+                    spectator_location_offset_z: this.properties.spectatorLocationOffsetZ,
+                    spectator_rotation_pitch: this.properties.spectatorRotationPitch,
+                    spectator_rotation_yaw: this.properties.spectatorRotationYaw,
+                    spectator_rotation_roll: this.properties.spectatorRotationRoll,
+                    max_simulation_time: this.properties.maxSimulationTime,
+                    max_vechiles: this.properties.maxVehicles,
+                    max_pedestrians: this.properties.maxPedestrians,
+                    map: this.properties.map,
+                    map_dir: this.properties.mapDirectory,
+                    world_configuration: this.properties.worldConfigFile,
+                    output_directory: this.properties.outputDirectory
+                })
+            })
+            .done((data, textStatus, jqXHR) => {
                 this.setOutputData(0, this.properties.outputDirectory);
                 alert("Synthetic data generated successfully.");
-            },
-            error: (xhr, status, error) => {
-               alert("An error occurred while generating synthetic data.");
-            }
-        });
+            })
+            .fail((jqXHR, textStatus, errorThrown) => {
+                alert("An error occurred while generating synthetic data.");
+            })
+            .always(() => {
+                this.triggerCount = 0;
+                this.running = false;
+            });
+        }
     }
 }
 /*=====================================================================*/
@@ -262,6 +313,7 @@ class SyntheticDataGenerator extends LGraphNode {
 /*======================= Execute pre-commits =========================*/
 function executePreCommits() {
     keepSpecificNodes();
+    LiteGraph.registerNodeType("Generic/Prompt", PromptNode);
     LiteGraph.registerNodeType("Carla/Actor Generator", ActorGeneratorNode);
     LiteGraph.registerNodeType("Carla/Synthetic Data Generator", SyntheticDataGenerator);
 }

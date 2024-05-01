@@ -1,6 +1,7 @@
 import os
 import sys
 from pathlib import Path
+from . import sdc_config
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -12,3 +13,5 @@ SUBMODULES_DIR = BASE_DIR.parent / os.getenv("SUBMODULES_DIR", "third_party")
 # Adding SDC submodule
 SDC_DIR = os.getenv("SDC_DIR", "SDC")
 sys.path.append(str(SUBMODULES_DIR / SDC_DIR))
+
+__all__ = ["sdc_config"]

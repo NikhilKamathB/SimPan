@@ -4,26 +4,29 @@ from third_party.SDC import main
 from workers.validators import (
     Status,
     ActorType,
-    WorkerResponseValidator, 
     ActorGeneratorValidator,
     SyntheticDataGeneratorValidator
 )
+from simpan.simpan.validator import ResponseValidator
 
 
 @shared_task(name="generate_actor")
+# @app.task
 def generate_actor(config: dict) -> dict:
     config = ActorGeneratorValidator.model_validate(config)
     try:
         start_time = time.time()
-        for_vehicle = config.actor_type == ActorType.VEHICLE
-        main.generate_configuration(
-            number_of_actors=config.number_of_actors,
-            config_dir=config.config_dir,
-            reference_config_file=config.reference_config_file,
-            for_vehicle=for_vehicle,
-            for_pedestrian=not for_vehicle
-        )
-        return WorkerResponseValidator.model_validate({
+        time.sleep(5)
+        # start_time = time.time()
+        # for_vehicle = config.actor_type == ActorType.VEHICLE
+        # main.generate_configuration(
+        #     number_of_actors=config.number_of_actors,
+        #     config_dir=config.config_dir,
+        #     reference_config_file=config.reference_config_file,
+        #     for_vehicle=for_vehicle,
+        #     for_pedestrian=not for_vehicle
+        # )
+        return ResponseValidator.model_validate({
             "status": Status.OK,
             "message": "Actor generation completed successfully.",
             "body": {
@@ -33,7 +36,7 @@ def generate_actor(config: dict) -> dict:
             }
         }).model_dump(mode="json")
     except Exception as e:
-        return WorkerResponseValidator.model_validate({
+        return ResponseValidator.model_validate({
             "status": Status.ERROR,
             "message": "Actor generation failed.",
             "body": {
@@ -42,37 +45,39 @@ def generate_actor(config: dict) -> dict:
         }).model_dump(mode="json")
 
 @shared_task(name="generate_synthetic_data")
+# @app.task
 def generate_synthetic_data(carla_config: dict) -> dict:
     carla_config = SyntheticDataGeneratorValidator.model_validate(carla_config)
     try:
         start_time = time.time()
-        main.generate_synthetic_data(
-            hostname=carla_config.hostname,
-            port=carla_config.port,
-            carla_client_timeout=carla_config.carla_client_timeout,
-            synchronous=carla_config.synchronous,
-            fixed_delta_seconds=carla_config.fixed_delta_seconds,
-            tm_port=carla_config.tm_port,
-            tm_hybrid_physics_mode=carla_config.tm_hybrid_physics_mode,
-            tm_hybrid_physics_radius=carla_config.tm_hybrid_physics_radius,
-            tm_global_distance_to_leading_vehicle=carla_config.tm_global_distance_to_leading_vehicle,
-            tm_seed=carla_config.tm_seed,
-            rfps=carla_config.rfps,
-            spectator_enabled=carla_config.spectator_enabled,
-            spectator_attachment_mode=carla_config.spectator_attachment_mode,
-            spectator_location_offset=carla_config.spectator_location_offset(),
-            spectator_rotation=carla_config.spectator_rotation(),
-            max_simulation_time=carla_config.max_simulation_time,
-            max_vechiles=carla_config.max_vechiles,
-            vechile_config_dir=carla_config.vechile_config_dir,
-            max_pedestrians=carla_config.max_pedestrians,
-            pedestrian_config_dir=carla_config.pedestrian_config_dir,
-            map=carla_config.map,
-            map_dir=carla_config.map_dir,
-            world_configuration=carla_config.world_configuration,
-            output_directory=carla_config.output_directory
-        )
-        return WorkerResponseValidator.model_validate({
+        time.sleep(10)
+        # main.generate_synthetic_data(
+        #     hostname=carla_config.hostname,
+        #     port=carla_config.port,
+        #     carla_client_timeout=carla_config.carla_client_timeout,
+        #     synchronous=carla_config.synchronous,
+        #     fixed_delta_seconds=carla_config.fixed_delta_seconds,
+        #     tm_port=carla_config.tm_port,
+        #     tm_hybrid_physics_mode=carla_config.tm_hybrid_physics_mode,
+        #     tm_hybrid_physics_radius=carla_config.tm_hybrid_physics_radius,
+        #     tm_global_distance_to_leading_vehicle=carla_config.tm_global_distance_to_leading_vehicle,
+        #     tm_seed=carla_config.tm_seed,
+        #     rfps=carla_config.rfps,
+        #     spectator_enabled=carla_config.spectator_enabled,
+        #     spectator_attachment_mode=carla_config.spectator_attachment_mode,
+        #     spectator_location_offset=carla_config.spectator_location_offset(),
+        #     spectator_rotation=carla_config.spectator_rotation(),
+        #     max_simulation_time=carla_config.max_simulation_time,
+        #     max_vechiles=carla_config.max_vechiles,
+        #     vechile_config_dir=carla_config.vechile_config_dir,
+        #     max_pedestrians=carla_config.max_pedestrians,
+        #     pedestrian_config_dir=carla_config.pedestrian_config_dir,
+        #     map=carla_config.map,
+        #     map_dir=carla_config.map_dir,
+        #     world_configuration=carla_config.world_configuration,
+        #     output_directory=carla_config.output_directory
+        # )
+        return ResponseValidator.model_validate({
             "status": Status.OK,
             "message": "Synthetic data generation completed successfully.",
             "body": {
@@ -84,7 +89,7 @@ def generate_synthetic_data(carla_config: dict) -> dict:
             }
         }).model_dump(mode="json")
     except Exception as e:
-        return WorkerResponseValidator.model_validate({
+        return ResponseValidator.model_validate({
             "status": Status.ERROR,
             "message": "Synthetic data generation failed.",
             "body": {

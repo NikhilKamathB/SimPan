@@ -162,9 +162,6 @@ docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3.13-manageme
 
 http://host:15672 will show the rabbitmq management console.
 http://host:5555 will show the flower monitoring console.
-
-To have the celery worker running:
-    1. Queue - `sdc_q`: celery -A sdc worker -l info -Q sdc_q
 '''
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "amqp://guest:guest@localhost:5672//")
 
