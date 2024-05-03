@@ -35,7 +35,7 @@ class PromptNode extends CustomLGraphNode {
         super();
         this.title = "Prompt";
         this.addOutput("prompt", LiteGraph.EVENT);
-        this.addWidget("button", "Prompt", null, () => {
+        this.addWidget("button", "Submit", null, () => {
             for (let node of this.graph._nodes) {
                 if (node.running) {
                     alert("Pipeline is already running. Please wait for the current pipeline to finish.");
@@ -91,10 +91,6 @@ class ActorGeneratorNode extends CustomLGraphNode {
         this.mode = LiteGraph.ON_TRIGGER;
     }
 
-    onAction(action, param) {
-        console.log("Action 1: ", action, param);
-    }
-
     onExecute() {
         const csrftoken = getCookie('csrftoken');
         this.running = true;
@@ -113,17 +109,17 @@ class ActorGeneratorNode extends CustomLGraphNode {
                 by_pass: this.properties.byPass
             })
         })
-        .done((data, textStatus, jqXHR) => {
-            this.setOutputData(0, this.properties.outputDirectory);
-            alert("Actor generated successfully.");
-            this.trigger("onActorGeneration", this.properties.numberOfActors);
-        })
-        .fail((jqXHR, textStatus, errorThrown) => {
-            alert("An error occurred while generating actor.");
-        })
-        .always(() => {
-            this.running = false;
-        });
+            .done((data, textStatus, jqXHR) => {
+                this.setOutputData(0, this.properties.outputDirectory);
+                alert("Actor generated successfully.");
+                this.trigger("onActorGeneration", this.properties.numberOfActors);
+            })
+            .fail((jqXHR, textStatus, errorThrown) => {
+                alert("An error occurred while generating actor.");
+            })
+            .always(() => {
+                this.running = false;
+            });
     }
 }
 
@@ -136,6 +132,7 @@ class SyntheticDataGenerator extends CustomLGraphNode {
         this.addInput("Pedestrian Configuration Directory", "string");
         this.addInput("vehicleTrigger", LiteGraph.ACTION);
         this.addInput("pedestrianTrigger", LiteGraph.ACTION);
+        this.addOutput("onSyntheticDataGeneration", LiteGraph.EVENT);
         this.addOutput("Output Directory", "string");
         this.triggerCount = 0;
         this.minTriggerCountToExecute = 2;
@@ -150,6 +147,7 @@ class SyntheticDataGenerator extends CustomLGraphNode {
             tmHybridPhysicsModeRadius: 70.0,
             tmGlobalDistanceToLeadingVehicle: 2.5,
             tmSeed: 42,
+            tmSpeed: 60.0,
             rfps: null,
             spectatorEnable: true,
             spectatorAttachmentMode: "v",
@@ -159,12 +157,12 @@ class SyntheticDataGenerator extends CustomLGraphNode {
             spectatorRotationPitch: -15.0,
             spectatorRotationYaw: 0.0,
             spectatorRotationRoll: 0.0,
-            maxSimulationTime: 100000.0,
+            maxSimulationTime: 5.0,
             maxVehicles: 50,
             maxPedestrians: 100,
             map: "Town01",
             mapDirectory: "/Game/Carla/Maps",
-            worldConfigFile: "/home/tyche/nikhil/SDC/data/config/town01_default.yaml",
+            worldConfigFile: "/home/tyche/nikhil/SDC/data/config/world0.yaml",
             outputDirectory: "/home/tyche/nikhil/SDC/data/raw",
             vechile_config_dir: "/home/tyche/nikhil/SDC/data/config/vehicles",
             pedestrian_config_dir: "/home/tyche/nikhil/SDC/data/config/pedestrians"
@@ -198,6 +196,9 @@ class SyntheticDataGenerator extends CustomLGraphNode {
         }, { min: 0, max: 10, step: 1, precision: 1 });
         this.addWidget("number", "Traffic Manager Seed", this.properties.tmSeed, value => {
             this.properties.tmSeed = value;
+        }, { min: 0, max: 100, step: 10, precision: 0 });
+        this.addWidget("number", "Traffic Manager Speed", this.properties.tmSpeed, value => {
+            this.properties.tmSpeed = value;
         }, { min: 0, max: 100, step: 10, precision: 0 });
         this.addWidget("number", "RFPS", this.properties.rfps, value => {
             this.properties.rfps = value;
@@ -247,7 +248,7 @@ class SyntheticDataGenerator extends CustomLGraphNode {
         this.addWidget("text", "Output Directory", this.properties.outputDirectory, value => {
             this.properties.outputDirectory = value;
         });
-        this.size = [500, 725];
+        this.size = [500, 750];
         this.mode = LiteGraph.ON_TRIGGER;
     }
 
@@ -276,6 +277,7 @@ class SyntheticDataGenerator extends CustomLGraphNode {
                     tm_hybrid_physics_radius: this.properties.tmHybridPhysicsModeRadius,
                     tm_global_distance_to_leading_vehicle: this.properties.tmGlobalDistanceToLeadingVehicle,
                     tm_seed: this.properties.tmSeed,
+                    tm_speed: this.properties.tmSpeed,
                     rfps: this.properties.rfps,
                     spectator_enabled: this.properties.spectatorEnable,
                     spectator_attachment_mode: this.properties.spectatorAttachmentMode,
@@ -294,18 +296,81 @@ class SyntheticDataGenerator extends CustomLGraphNode {
                     output_directory: this.properties.outputDirectory
                 })
             })
+                .done((data, textStatus, jqXHR) => {
+                    this.setOutputData(0, this.properties.outputDirectory);
+                    alert("Synthetic data generated successfully.");
+                    this.trigger("onSyntheticDataGeneration", this.properties.outputDirectory);
+                })
+                .fail((jqXHR, textStatus, errorThrown) => {
+                    alert("An error occurred while generating synthetic data.");
+                })
+                .always(() => {
+                    this.triggerCount = 0;
+                    this.running = false;
+                });
+        }
+    }
+}
+
+class SyntheticDataReportGeneratorNode extends CustomLGraphNode {
+
+    constructor() {
+        super();
+        this.title = "Synthetic Data Report Generator";
+        this.addInput("synReportTrigger", LiteGraph.ACTION);
+        this.properties = {
+            dataDirectory: "/home/tyche/nikhil/SDC/data/raw",
+            outputDirectory: "/home/tyche/nikhil/SDC/data/interim",
+            prefixTag: false,
+            prefixDir: false,
+            needFileName: false
+        };
+        this.addWidget("text", "Data Directory", this.properties.dataDirectory, value => {
+            this.properties.dataDirectory = value;
+        });
+        this.addWidget("text", "Output Directory", this.properties.outputDirectory, value => {
+            this.properties.outputDirectory = value;
+        });
+        this.addWidget("toggle", "Prefix Tag", this.properties.prefixTag, value => {
+            this.properties.prefixTag = value;
+        });
+        this.addWidget("toggle", "Prefix Directory", this.properties.prefixDir, value => {
+            this.properties.prefixDir = value;
+        });
+        this.addWidget("toggle", "Need File Name", this.properties.needFileName, value => {
+            this.properties.needFileName = value;
+        });
+        this.size = [500, 150];
+        this.mode = LiteGraph.ON_TRIGGER;
+    }
+
+    onExecute() {
+        const csrftoken = getCookie('csrftoken');
+        this.running = true;
+        $.ajax({
+            timeout: 0,
+            url: "/comfyui/carla/synthetic-data-report-generator/",
+            method: "POST",
+            headers: { 'X-CSRFToken': csrftoken },
+            contentType: "application/json",
+            dataType: "json",
+            data: JSON.stringify({
+                data_dir: this.properties.dataDirectory,
+                output_directory: this.properties.outputDirectory,
+                prefix_tag: this.properties.prefixTag,
+                prefix_dir: this.properties.prefixDir,
+                need_file_name: this.properties.needFileName
+            })
+        })
             .done((data, textStatus, jqXHR) => {
-                this.setOutputData(0, this.properties.outputDirectory);
-                alert("Synthetic data generated successfully.");
+                alert("Synthetic data report generated successfully.");
             })
             .fail((jqXHR, textStatus, errorThrown) => {
-                alert("An error occurred while generating synthetic data.");
+                alert("An error occurred while generating report.");
             })
             .always(() => {
-                this.triggerCount = 0;
                 this.running = false;
             });
-        }
     }
 }
 /*=====================================================================*/
@@ -316,6 +381,7 @@ function executePreCommits() {
     LiteGraph.registerNodeType("Generic/Prompt", PromptNode);
     LiteGraph.registerNodeType("Carla/Actor Generator", ActorGeneratorNode);
     LiteGraph.registerNodeType("Carla/Synthetic Data Generator", SyntheticDataGenerator);
+    LiteGraph.registerNodeType("Carla/Synthetic Data Report Generator", SyntheticDataReportGeneratorNode);
 }
 /*=====================================================================*/
 

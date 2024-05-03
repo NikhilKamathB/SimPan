@@ -50,6 +50,7 @@ class SyntheticDataGeneratorValidator(BaseModel):
     tm_hybrid_physics_radius: Optional[float] = 70.0
     tm_global_distance_to_leading_vehicle: Optional[float] = 2.5
     tm_seed: Optional[int] = 42
+    tm_speed: Optional[float] = 60.0
     rfps: Optional[int] = None
     spectator_enabled: Optional[bool] = True
     spectator_attachment_mode: Optional[str] = 'v'
@@ -82,3 +83,12 @@ class SyntheticDataGeneratorValidator(BaseModel):
             self.spectator_rotation_yaw,
             self.spectator_rotation_roll
         ]
+
+
+class SyntheticDataReportGeneratorValidator(BaseModel):
+
+    data_dir: Optional[str] = "/home/tyche/nikhil/SDC/data/raw"
+    output_directory: Optional[str] = "/home/tyche/nikhil/SDC/data/interim"
+    prefix_tag: Optional[bool] = False
+    prefix_dir: Optional[bool] = False
+    need_file_name: Optional[bool] = False

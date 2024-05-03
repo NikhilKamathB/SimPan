@@ -28,3 +28,9 @@ def carla_synthetic_data_generator(request) -> Union[HttpResponse, HttpResponseS
         result = sdc_app.send_task("generate_synthetic_data", args=[
                                  json.loads(request.body)], exchange=ExchangeName.SDC.value, routing_key=RoutingKey.SDC.value).get()
         return generate_celery_response(result)
+
+def carla_synthetic_data_report_generator(request):
+    if request.method == "POST":
+        result = sdc_app.send_task("generate_synthetic_data_report", args=[
+                                 json.loads(request.body)], exchange=ExchangeName.SDC.value, routing_key=RoutingKey.SDC.value).get()
+        return generate_celery_response(result)
