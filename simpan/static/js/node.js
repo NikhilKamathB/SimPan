@@ -44,7 +44,27 @@ class PromptNode extends CustomLGraphNode {
             }
             this.onExecute();
         });
-        this.size = [200, 60];
+        this.addWidget("button", "Abort", null, () => {
+            const csrftoken = getCookie('csrftoken');
+            this.graph.stop();
+            $.ajax({
+                timeout: 0,
+                url: "/comfyui/abort/",
+                method: "DELETE",
+                headers: { 'X-CSRFToken': csrftoken },
+                contentType: "application/json"
+            })
+                .done((data, textStatus, jqXHR) => {
+                    alert(data.message);
+                })
+                .fail((jqXHR, textStatus, errorThrown) => {
+                    alert("An error occurred while aborting graph execution.");
+                })
+                .always(() => {
+                    this.running = false;
+                });
+        });
+        this.size = [200, 75];
     }
 
     onExecute() {
@@ -110,9 +130,11 @@ class ActorGeneratorNode extends CustomLGraphNode {
             })
         })
             .done((data, textStatus, jqXHR) => {
-                this.setOutputData(0, this.properties.outputDirectory);
-                alert("Actor generated successfully.");
-                this.trigger("onActorGeneration", this.properties.numberOfActors);
+                alert(data.message);
+                if ((data.body == null || data.body == undefined) || (data.body != null && data.body != undefined && !("trigger" in data.body) && !data.body.trigger)) {
+                    this.setOutputData(0, this.properties.outputDirectory);
+                    this.trigger("onActorGeneration", this.properties.numberOfActors);
+                }
             })
             .fail((jqXHR, textStatus, errorThrown) => {
                 alert("An error occurred while generating actor.");
@@ -297,9 +319,11 @@ class SyntheticDataGenerator extends CustomLGraphNode {
                 })
             })
                 .done((data, textStatus, jqXHR) => {
-                    this.setOutputData(0, this.properties.outputDirectory);
-                    alert("Synthetic data generated successfully.");
-                    this.trigger("onSyntheticDataGeneration", this.properties.outputDirectory);
+                    alert(data.message);
+                    if ((data.body == null || data.body == undefined) || (data.body != null && data.body != undefined && !("trigger" in data.body) && !data.body.trigger)) {
+                        this.setOutputData(0, this.properties.outputDirectory);
+                        this.trigger("onSyntheticDataGeneration", this.properties.outputDirectory);
+                    }
                 })
                 .fail((jqXHR, textStatus, errorThrown) => {
                     alert("An error occurred while generating synthetic data.");
@@ -363,7 +387,7 @@ class SyntheticDataReportGeneratorNode extends CustomLGraphNode {
             })
         })
             .done((data, textStatus, jqXHR) => {
-                alert("Synthetic data report generated successfully.");
+                alert(data.message);
             })
             .fail((jqXHR, textStatus, errorThrown) => {
                 alert("An error occurred while generating report.");

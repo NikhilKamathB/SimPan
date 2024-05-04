@@ -16,7 +16,7 @@ def generate_actor(config: dict) -> dict:
     config = ActorGeneratorValidator.model_validate(config)
     try:
         # TODO: remove this
-        time.sleep(3)
+        # time.sleep(5)
         start_time = time.time()
         for_vehicle = config.actor_type == ActorType.VEHICLE
         main.generate_configuration(
@@ -49,6 +49,7 @@ def generate_synthetic_data(carla_config: dict) -> dict:
     carla_config = SyntheticDataGeneratorValidator.model_validate(carla_config)
     try:
         start_time = time.time()
+        # time.sleep(3)
         main.generate_synthetic_data(
             hostname=carla_config.hostname,
             port=carla_config.port,
@@ -102,6 +103,8 @@ def generate_synthetic_data_report(carla_config: dict) -> dict:
     carla_config = SyntheticDataReportGeneratorValidator.model_validate(carla_config)
     try:
         start_time = time.time()
+        # TODO: remove this
+        # time.sleep(3)
         main.generate_synthetic_data_report(
             **carla_config.model_dump(mode="dict")
         )
