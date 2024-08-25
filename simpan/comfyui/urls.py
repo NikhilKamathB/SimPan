@@ -8,5 +8,6 @@ urlpatterns = [
     path("carla/actor-generator/", views.carla_actor_generator, name="carla_actor_generator"),
     path("carla/synthetic-data-generator/", views.carla_synthetic_data_generator, name="carla_synthetic_data_generator"),
     path("carla/synthetic-data-report-generator/", views.carla_synthetic_data_report_generator, name="carla_synthetic_data_report_generator"),
-    path("abort/", views.abort, name="abort")
+    path("abort/", views.abort, name="abort"),
+    path("chat/", views.llm_call, name="chat"),
 ]

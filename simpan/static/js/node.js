@@ -409,4 +409,4 @@ function executePreCommits() {
 }
 /*=====================================================================*/
 
-export { executePreCommits };
+export { executePreCommits, PromptNode, ActorGeneratorNode, SyntheticDataGenerator, SyntheticDataReportGeneratorNode };

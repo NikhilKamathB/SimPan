@@ -8,6 +8,7 @@ from workers.sdc import app as sdc_app
 from comfyui.constants import INITIATED, ABORTED
 from comfyui.utils import make_message_response, return_http_response, generate_celery_response, trigger_sdc_task
 
+from comfyui import AGENT
 
 def index(request):
     return render(request, "comfyui/comfyui.html")
@@ -58,3 +59,26 @@ def abort(request):
         return return_http_response(
             make_message_response("Task aborted successfully.")
         )
+    
+############################################################################################################
+
+def llm_call(request):
+    if request.method == "POST":
+        try:
+            query = request.POST.get("chat-query")
+            print(query)
+            agent_response = AGENT.invoke({"question": query})
+            print(agent_response)
+            return return_http_response(
+                make_message_response("Task aborted successfully.")
+            )
+        except Exception as e:
+            print(e)
+            return return_http_response(
+                make_message_response(
+                    "Error occurred while processing the request.", body={"error": str(e)}
+                )
+            )
+    return return_http_response(
+        make_message_response("Method not allowed.")
+    )

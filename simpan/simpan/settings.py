@@ -12,13 +12,46 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import os
 import sys
+import environ
 from pathlib import Path
-from dotenv import load_dotenv
-
-load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+env = environ.Env(
+    # Django
+    DEBUG=(bool, True),
+    SECRET_KEY=(
+        str, "django-insecure-4$@mf5t0@7#v6$ubbna$)gd)d_65l89zxr+c*#a_ysdxf0c)u&"),
+    STATIC_ROOT=(str, "static_colect"),
+    # Langchain
+    RAW_DATA_PATH=(str, "./static_base/data"),
+    TOP_K=(int, 4),
+    FETCH_K=(int, 20),
+    LAMBDA_MULTIPLIER=(float, 0.5),
+    CHUNK_SIZE=(int, 4000),
+    CHUNK_OVERLAP=(int, 200),
+    EMBEDDING_TYPE=(str, "text-embedding-3-large"),
+    SEARCH_TYPE=(str, "similarity"),
+    DOCUMENT_SEPARATOR=(str, "\n\n"),
+    LLM_MODEL_NAME=(str, "gpt-3.5-turbo"),
+    LLM_TEMPERATURE=(float, 1.0),
+    LLM_MAX_TOKEN_LENGTH=(int, None),
+    LLM_TOP_P=(float, 1.0),
+    LLM_PRESENCE_PENALTY=(float, 0.0),
+    LLM_FREQUENCY_PENALTY=(float, 0.0),
+    LLM_RAG_PROMPT_NAME=(str, "portfolio-rag-prompt"),
+    LLM_AGENT_MAX_ITERATIONS=(int, 5),
+    # Langsmith
+    LANGCHAIN_TRACING_V2=(bool, True),
+    LANGCHAIN_ENDPOINT=(str, "https://api.smith.langchain.com"),
+    LANGCHAIN_API_KEY=(str, ""),
+    LANGCHAIN_PROJECT=(str, "Portfolio"),
+)
+
+
+env_file = os.path.join(BASE_DIR, ".env")
+env.read_env(env_file)
 
 # Add to path the main project directory.
 sys.path.append(str(BASE_DIR.parent)) # String representation of the posix path.
@@ -27,10 +60,10 @@ sys.path.append(str(BASE_DIR.parent)) # String representation of the posix path.
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY", 'django-insecure-4$@mf5t0@7#v6$ubbna$)gd)d_65l89zxr+c*#a_ysdxf0c)u&')
+SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(int(os.environ.get("DEBUG", 1)))
+DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = ['*']
 
@@ -145,7 +178,7 @@ STATIC_BASE = 'static'
 STATICFILES_DIRS = [
     BASE_DIR / STATIC_BASE,
 ]
-STATIC_ROOT = os.getenv('STATIC_ROOT', "dist")
+STATIC_ROOT = env("STATIC_ROOT")
 
 # Media handling.
 MEDIA_URL = '/media/'
@@ -210,6 +243,16 @@ LOGGING = {
         },
     },
 }
+
+# Langchain settings
+LLM_MODEL_NAME = env("LLM_MODEL_NAME")
+LLM_TEMPERATURE = env("LLM_TEMPERATURE")
+LLM_MAX_TOKEN_LENGTH = env("LLM_MAX_TOKEN_LENGTH")
+LLM_TOP_P = env("LLM_TOP_P")
+LLM_PRESENCE_PENALTY = env("LLM_PRESENCE_PENALTY")
+LLM_FREQUENCY_PENALTY = env("LLM_FREQUENCY_PENALTY")
+LLM_RAG_PROMPT_NAME = env("LLM_RAG_PROMPT_NAME")
+LLM_AGENT_MAX_ITERATIONS = env("LLM_AGENT_MAX_ITERATIONS")
 
 # GIT Submodules
 SUBMODULES_DIR = BASE_DIR.parent / os.getenv("SUBMODULES_DIR", "third_party")
