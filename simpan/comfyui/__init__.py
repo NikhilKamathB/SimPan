@@ -24,6 +24,9 @@ CONNECT_KWARGS = {"key_filename": ["/Users/tyche/.ssh/agi"]}
 CONN = Connection(host="34.16.75.203", user="nikhilkb98",
                   connect_kwargs=CONNECT_KWARGS)
 
+# create a simple html file with title "Hello world" and follow style from "https://timvisee.com/blog/dark-mode-toggle-on-static-website/" and deploy
+# Create a simple html page with message "Ping pong 2" referring "https://app.agihouse.org/events" and then deploy it
+
 
 def crawl_and_extract(url):
     print("Crawling and extracting")
