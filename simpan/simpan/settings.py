@@ -10,15 +10,34 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
-import os
 import sys
+import environ
 from pathlib import Path
-from dotenv import load_dotenv
-
-load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Set the environment variables.
+env = environ.Env(
+    DEBUG=(bool, True),
+    SECRET_KEY=(str, "django-insecure-4$@mf5t0@7#v6$ubbna$)gd)d_65l89zxr+c*#a_ysdxf0c)u&"),
+    STATIC_BASE=(str, "static"),
+    STATIC_ROOT=(str, "dist"),
+    MEDIA_ROOT=(str, "media"),
+    MEDIA_URL=(str, "/media/"),
+    STATIC_URL=(str, "static/"),
+    CELERY_BROKER_URL=(str, "amqp://guest:guest@localhost:5672//"),
+    SUBMODULES_DIR=(str, "third_party"),
+    LITEGRAPH_DIR=(str, "litegraph"),
+    SDC_DIR=(str, "SDC"),
+    LOG_LEVEL=(str, "INFO"),
+    LOG_DIR=(str, "logs"),
+)
+
+env_file = BASE_DIR / ".env"
+
+if env_file.exists():
+    env.read_env(env_file)
 
 # Add to path the main project directory.
 sys.path.append(str(BASE_DIR.parent)) # String representation of the posix path.
@@ -27,10 +46,10 @@ sys.path.append(str(BASE_DIR.parent)) # String representation of the posix path.
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY", 'django-insecure-4$@mf5t0@7#v6$ubbna$)gd)d_65l89zxr+c*#a_ysdxf0c)u&')
+SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(int(os.environ.get("DEBUG", 1)))
+DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = ['*']
 
@@ -140,16 +159,16 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
-STATIC_URL = 'static/'
-STATIC_BASE = 'static'
+STATIC_URL = env("STATIC_URL")
+STATIC_BASE = env("STATIC_BASE")
 STATICFILES_DIRS = [
     BASE_DIR / STATIC_BASE,
 ]
-STATIC_ROOT = os.getenv('STATIC_ROOT', "dist")
+STATIC_ROOT = env("STATIC_ROOT")
 
 # Media handling.
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = env("MEDIA_URL")
+MEDIA_ROOT = BASE_DIR / env("MEDIA_ROOT")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -163,7 +182,7 @@ docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3.13-manageme
 http://host:15672 will show the rabbitmq management console.
 http://host:5555 will show the flower monitoring console.
 '''
-CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "amqp://guest:guest@localhost:5672//")
+CELERY_BROKER_URL = env("CELERY_BROKER_URL")
 
 # Django Logging
 LOGGING = {
@@ -181,13 +200,13 @@ LOGGING = {
     },
     "handlers": {
         "file": {
-            "level": os.getenv("LOG_LEVEL", "INFO"),
+            "level": env("LOG_LEVEL"),
             "class": "logging.FileHandler",
-            "filename": "django.log",
+            "filename": BASE_DIR / env("LOG_DIR") / "simpan.log",
             "formatter": "verbose",
         },
         "console": {
-            "level": os.getenv("LOG_LEVEL", "INFO"),
+            "level": env("LOG_LEVEL"),
             "class": "logging.StreamHandler",
             "formatter": "simple",
         },
@@ -195,23 +214,23 @@ LOGGING = {
     "loggers": {
         "django": {
             "handlers": ["file", "console"],
-            "level": os.getenv("LOG_LEVEL", "INFO"),
+            "level": env("LOG_LEVEL"),
             "propagate": True,
         },
         "home": {
             "handlers": ["file", "console"],
-            "level": os.getenv("LOG_LEVEL", "INFO"),
+            "level": env("LOG_LEVEL"),
             "propagate": True,
         },
         "comfyui": {
             "handlers": ["file", "console"],
-            "level": os.getenv("LOG_LEVEL", "INFO"),
+            "level": env("LOG_LEVEL"),
             "propagate": True,
         },
     },
 }
 
 # GIT Submodules
-SUBMODULES_DIR = BASE_DIR.parent / os.getenv("SUBMODULES_DIR", "third_party")
-LITEGRAPH_DIR = os.getenv("LITEGRAPH_DIR", "litegraph")
-SDC_DIR = os.getenv("SDC_DIR", "SDC")
+SUBMODULES_DIR = BASE_DIR.parent / env("SUBMODULES_DIR")
+LITEGRAPH_DIR = env("LITEGRAPH_DIR")
+SDC_DIR = env("SDC_DIR")
