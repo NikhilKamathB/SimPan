@@ -33,6 +33,7 @@
     --smaller-font-size: .75rem;
     --default-border-thickness: 4px;
     --default-border-radius: 2.5rem;
+    --default-border-squared-radius: .75rem;
 
     /*========== Font weight ==========*/
     --font-medium: 500;
@@ -74,6 +75,8 @@ body {
     }
 }
 
+/*==================== BASE CSS VARIABLES END ====================*/
+
 /*====================== BASE ======================*/
 * {
     box-sizing: border-box;
@@ -113,3 +116,21 @@ img {
     height: auto;
 }
 /*==================== BASE END ====================*/
+
+/*================== SCROLL BAR ====================*/
+::-webkit-scrollbar {
+    width: .5rem;
+    margin: .5rem;
+    background-color: var(--scroll-bar-color);
+    border-radius: var(--default-border-squared-radius) 0 0 var(--default-border-squared-radius);
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--scroll-thumb-color);
+    border-radius: var(--default-border-squared-radius) 0 0 var(--default-border-squared-radius);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--text-color-light);
+}
+/*================ SCROLL BAR END =================*/

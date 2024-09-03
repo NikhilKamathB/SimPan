@@ -15,30 +15,13 @@ function getCookie(name) {
     return cookieValue;
 }
 
-// Make fetch request to Django API
-async function makeRequest(url, method, data, ) {
-    const csrftoken = getCookie('csrftoken');
-    const response = await fetch(url, {
-        method: method,
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrftoken
-        },
-        body: data
-    });
-    return response;
-}
-
-// Get json data from response
-async function getJson(response) {
-    const data = await response.json();
-    return data;
-}
-
 // Definitions
 const VehicleType = {
     VEHICLE: 'vehicle',
     PEDESTRIAN: 'pedestrian'
 };
+
+// Global scoped
+window.getCookie = getCookie;
 
 export { getCookie, VehicleType };

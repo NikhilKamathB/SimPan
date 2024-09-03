@@ -1,0 +1,119 @@
+.main-container,
+.logo-container,
+.chat-container {
+    width: 100vw;
+}
+
+.chat-container {
+    display: flex;
+    height: 100vh;
+    flex-direction: column;
+    justify-content: flex-end;
+    border-left: var(--default-border-thickness) solid var(--first-color);
+    border-radius: var(--default-border-radius) 0 0 var(--default-border-radius);
+}
+
+.chatbot-container-body {
+    overflow-y: auto;
+    scrollbar-width: none;
+    border-radius: var(--default-border-radius) var(--default-border-radius) 0 0;
+}
+
+.chatbot-container-body::-webkit-scrollbar {
+    display: none;
+}
+
+.chatbot-profile-user {
+    margin-left: .75rem;
+}
+
+.chatbot-profile-bot {
+    margin-right: .75rem;
+}
+
+.chatbot-body-text-user {
+    text-align: right;
+}
+
+.chatbot-body-text-bot {
+    text-align: left;
+}
+
+.chatbot-body-text {
+    display: inline-flex;
+    text-align: left;
+    max-width: 90%;
+    background-color: var(--body-color);
+    margin-top: 1rem;
+    border-radius: 1rem;
+}
+
+.chatbot-body-text-p-bot,
+.chatbot-body-text-p-user {
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    font-size: var(--normal-font-size);
+    padding: 0.75rem 0.5rem;
+    margin: 0.25rem;
+}
+
+.chatbot-body-text-p-bot p,
+.chatbot-body-text-p-user p {
+    margin: 0;
+}
+
+.chatbot-body-text-loader {
+    margin: .75rem;
+}
+
+.chatbot-body-text-loader span {
+    width: 7px;
+    height: 7px;
+    background-color: var(--title-color);
+    display: inline-block;
+    border-radius: 50%;
+}
+
+.chatbot-body-text-loader span:nth-child(1) {
+    animation: bounce 1s infinite;
+}
+
+.chatbot-body-text-loader span:nth-child(2) {
+    animation: bounce 1s infinite 0.2s;
+}
+
+.chatbot-body-text-loader span:nth-child(3) {
+    animation: bounce 1s infinite 0.4s;
+}
+
+.fa-plane-send-span {
+    font-size: var(--h3-font-size);
+    align-self: self-end;
+    padding-left: .75rem;
+}
+
+.fa-custom-style {
+    color: var(--first-color);
+}
+
+#chatbot-textarea {
+    resize: none;
+    height: 25px;
+    max-height: 150px;
+    border-radius: var(--default-border-squared-radius);
+}
+
+@keyframes bounce {
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(8px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
+}

@@ -1,8 +1,4 @@
-.main-container {
-    width: 100vh;
-}
-
-.logo-container, .content-container {
+.main-container, .logo-container, .content-container {
     width: 100vw;
 }
 

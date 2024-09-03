@@ -62,9 +62,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    # Third party apps
+    'rest_framework',
+
     # Apps
     'home.apps.HomeConfig',
     'comfyui.apps.ComfyuiConfig',
+    'comfychat.apps.ComfychatConfig',
 ]
 
 MIDDLEWARE = [

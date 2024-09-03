@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}ComfyCHAT{% endblock title %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/comfychat.css' %}">
+{% endblock css %}
+
+{% block body %}
+
+<div class="container d-flex justify-content-center align-items-center main-container">
+    <div class="row">
+        <div class="col d-flex justify-content-center align-items-center logo-container">
+            <div class="container">
+                VIEW
+            </div>
+        </div>
+        <div class="col chat-container p-4">
+            <div class="chatbot-container-body" id="chatbot-container-body">
+                <div class="chatbot-body" id="chatbot-body"></div>
+            </div>
+            <div class="chatbot-form mt-3 mb-4 mx-2">
+                <form class="chobot-form-body">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <div class="input-group">
+                            <textarea wrap="off" class="form-control chatbot-textarea" id="chatbot-textarea" oninput="auto_grow(this)" placeholder="Your message..."></textarea>
+                            <span class="input-group-addon fa-plane-send-span" id="fa-plane-send-span">
+                                <a class="send-button chatbot-submit" type="submit" id="chatbot-submit">
+                                    <i class="fa-solid fa-paper-plane fa-custom-style" id="fa-plane-send"></i>
+                                </a>
+                            </span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock body %}
+
+{% block js %}
+<script src="{% static 'js/comfychat.js' %}"></script>
+<script type="module" src="{% static 'js/utils.js' %}"></script>
+{% endblock js %}
