@@ -19,6 +19,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Set the environment variables.
 env = environ.Env(
+    # Django
     DEBUG=(bool, True),
     SECRET_KEY=(str, "django-insecure-4$@mf5t0@7#v6$ubbna$)gd)d_65l89zxr+c*#a_ysdxf0c)u&"),
     STATIC_BASE=(str, "static"),
@@ -32,6 +33,18 @@ env = environ.Env(
     SDC_DIR=(str, "SDC"),
     LOG_LEVEL=(str, "INFO"),
     LOG_DIR=(str, "logs"),
+
+    # Langchain
+    LANGCHAIN_TRACING_V2=(bool, True),
+    LANGCHAIN_ENDPOINT=(str, "https://api.smith.langchain.com"),
+    LANGCHAIN_API_KEY=(str, ""),
+    LANGCHAIN_PROJECT=(str, "SimPan"),
+
+    # Groq
+    GROQ_API_KEY=(str, ""),
+
+    # OpenAI
+    OPENAI_API_KEY=(str, ""),
 )
 
 env_file = BASE_DIR / ".env"
