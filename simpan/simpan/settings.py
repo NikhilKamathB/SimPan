@@ -14,8 +14,11 @@ import sys
 import environ
 from pathlib import Path
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+sys.path.append("/Users/tyche/nikhil/SimPan/simpan/MotionDiffuse")
 
 # Set the environment variables.
 env = environ.Env(
@@ -35,10 +38,28 @@ env = environ.Env(
     LOG_DIR=(str, "logs"),
 
     # Langchain
+    RAW_DATA_PATH=(str, "./static_base/data"),
+    TOP_K=(int, 4),
+    FETCH_K=(int, 20),
+    LAMBDA_MULTIPLIER=(float, 0.5),
+    CHUNK_SIZE=(int, 4000),
+    CHUNK_OVERLAP=(int, 200),
+    EMBEDDING_TYPE=(str, "text-embedding-3-large"),
+    SEARCH_TYPE=(str, "similarity"),
+    DOCUMENT_SEPARATOR=(str, "\n\n"),
+    LLM_MODEL_NAME=(str, "gpt-3.5-turbo"),
+    LLM_TEMPERATURE=(float, 1.0),
+    LLM_MAX_TOKEN_LENGTH=(int, None),
+    LLM_TOP_P=(float, 1.0),
+    LLM_PRESENCE_PENALTY=(float, 0.0),
+    LLM_FREQUENCY_PENALTY=(float, 0.0),
+    LLM_RAG_PROMPT_NAME=(str, "portfolio-rag-prompt"),
+    LLM_AGENT_MAX_ITERATIONS=(int, 5),
+    # Langsmith
     LANGCHAIN_TRACING_V2=(bool, True),
     LANGCHAIN_ENDPOINT=(str, "https://api.smith.langchain.com"),
     LANGCHAIN_API_KEY=(str, ""),
-    LANGCHAIN_PROJECT=(str, "SimPan"),
+    LANGCHAIN_PROJECT=(str, "Portfolio"),
 
     # Groq
     GROQ_API_KEY=(str, ""),
@@ -247,7 +268,23 @@ LOGGING = {
     },
 }
 
+import os
 # GIT Submodules
 SUBMODULES_DIR = BASE_DIR.parent / env("SUBMODULES_DIR")
 LITEGRAPH_DIR = env("LITEGRAPH_DIR")
 SDC_DIR = env("SDC_DIR")
+
+# Langchain settings
+LLM_MODEL_NAME = env("LLM_MODEL_NAME")
+LLM_TEMPERATURE = env("LLM_TEMPERATURE")
+LLM_MAX_TOKEN_LENGTH = env("LLM_MAX_TOKEN_LENGTH")
+LLM_TOP_P = env("LLM_TOP_P")
+LLM_PRESENCE_PENALTY = env("LLM_PRESENCE_PENALTY")
+LLM_FREQUENCY_PENALTY = env("LLM_FREQUENCY_PENALTY")
+LLM_RAG_PROMPT_NAME = env("LLM_RAG_PROMPT_NAME")
+LLM_AGENT_MAX_ITERATIONS = env("LLM_AGENT_MAX_ITERATIONS")
+
+# GIT Submodules
+SUBMODULES_DIR = BASE_DIR.parent / os.getenv("SUBMODULES_DIR", "third_party")
+LITEGRAPH_DIR = os.getenv("LITEGRAPH_DIR", "litegraph")
+SDC_DIR = os.getenv("SDC_DIR", "SDC")

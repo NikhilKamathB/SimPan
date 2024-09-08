@@ -122,6 +122,19 @@ $('#chatbot-textarea').keypress(function (e) {
     }
 })
 
+function displayGif(gifPath) {
+    const gifContainer = document.getElementById('gifContainer');
+    gifContainer.innerHTML = ''; // Clear any existing content
+
+    const img = document.createElement('img');
+    img.src = gifPath;
+    img.alt = 'Generated Animation';
+    img.style.maxWidth = '100%';
+    img.style.maxHeight = '100%';
+
+    gifContainer.appendChild(img);
+}
+
 function generateChatbotBodyLoader(type = "bot") {
     const icon = '<i class="fa-solid fa-robot chatbot-profile-bot"></i>';
     var chatbotBodyLoader = `
@@ -212,6 +225,7 @@ function chatSubmit(e) {
                 $('.chatbot-body-text-p-bot').last().append(response.description);
                 resetChatbotTextarea();
                 clearFileSelection();
+                displayGif('/static/img/result.gif');
             }, 1000);
         },
         error: function (response) {

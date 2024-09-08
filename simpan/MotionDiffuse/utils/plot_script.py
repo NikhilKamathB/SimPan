@@ -38,7 +38,7 @@ def plot_3d_motion(save_path, kinematic_tree, joints, title, figsize=(10, 10), f
         ax.set_ylim3d([0, radius / 2])
         ax.set_zlim3d([0, radius / 2])
         # print(title)
-        fig.suptitle(title, fontsize=20)
+        # fig.suptitle(title, fontsize=20)
         ax.grid(b=False)
     #         return ax
 
