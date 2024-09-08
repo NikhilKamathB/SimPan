@@ -1,5 +1,5 @@
-name: simpan
+name: simpan-agi-1
 channels:
   - defaults
 dependencies:
-  - python=3.12
+  - python=3.10

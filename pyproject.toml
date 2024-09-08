@@ -1,20 +1,27 @@
 [tool.poetry]
 name = "simpan"
 version = "0.1.0"
-description = "Workflow automation platform"
-authors = ["Nikhil Bola Kamath"]
+description = ""
+authors = ["Nikhil Bola Kamath <nikhilkb98@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
-django = "^5.1"
-pydantic = "^2.8.2"
+python = "^3.10"
+djangorestframework = "^3.15.2"
+django = "^5.1.1"
+pydantic = "^2.9.0"
 celery = "^5.4.0"
 django-environ = "^0.11.2"
-djangorestframework = "^3.15.2"
 markdown = "^3.7"
-langgraph = "^0.2.18"
+langgraph = "^0.2.19"
 langchain-community = "^0.2.16"
+clip = {git = "https://github.com/openai/CLIP.git"}
+opencv-python = "^4.10.0.84"
+scipy = "^1.14.1"
+matplotlib = "3.3.1"
+tqdm = "^4.66.5"
+spacy = "^3.7.6"
+mmcv = "^2.2.0"
 
 
 [build-system]

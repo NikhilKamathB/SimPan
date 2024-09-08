@@ -6,7 +6,11 @@
 !**/backup/**
 !**/static/**
 **/static/*/litegraph*
-
+*.tar
+*.npy
+*.json
+*.gif
+*.txt
 
 ### Django ###
 *.log
