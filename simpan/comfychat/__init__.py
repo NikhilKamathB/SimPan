@@ -66,12 +66,17 @@ https://developers.google.com/api-client-library/python/guide/aaa_client_secrets
 VALID_PRIVACY_STATUSES = ("public", "private", "unlisted")
 
 
+def clear_credentials(storage):
+    storage.delete()
+    print("Stored credentials have been cleared.")
+
 def get_authenticated_service(args):
   flow = flow_from_clientsecrets(CLIENT_SECRETS_FILE,
     scope=YOUTUBE_UPLOAD_SCOPE,
     message=MISSING_CLIENT_SECRETS_MESSAGE)
 
   storage = Storage("%s-oauth2.json" % sys.argv[0])
+  clear_credentials(storage)
   credentials = storage.get()
 
   if credentials is None or credentials.invalid:
@@ -255,8 +260,8 @@ def create_video(string: str) -> str:
         command = [
             "python", "-u", "./tools/visualization.py",
             "--opt_path", "./checkpoints/t2m/t2m_motiondiffuse/opt.txt",
-            "--text", "a person in walking",
-            "--motion_length", str(30),
+            "--text", string,
+            "--motion_length", str(60),
             "--result_path", "./result.gif",
         ]
         subprocess.run(command, check=True, text=True, capture_output=True)

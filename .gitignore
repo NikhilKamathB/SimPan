@@ -11,6 +11,7 @@
 *.json
 *.gif
 *.txt
+*.mp4
 
 ### Django ###
 *.log
