@@ -15,6 +15,8 @@ djangorestframework = "^3.15.2"
 markdown = "^3.7"
 langgraph = "^0.2.18"
 langchain-community = "^0.2.16"
+psycopg2-binary = "^2.9.9"
+drf-spectacular = "^0.27.2"
 
 
 [build-system]

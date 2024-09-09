@@ -192,15 +192,15 @@ function chatSubmit(e) {
     $('#chatbot-body').append(generateChatbotBodyLoader());
     $("#chatbot-container-body").animate({ scrollTop: $('#chatbot-body').height() }, "slow");
     const formData = new FormData();
-    formData.append('chat-query', message);
+    formData.append('chat_query', message);
     const currentWorkspaceId = getCurrentWorkspaceId();
-    formData.append('workspace-id', currentWorkspaceId);
+    formData.append('workspace_id', currentWorkspaceId);
     selectedFiles.forEach((file, index) => {
         formData.append(`file${index}`, file);
     });
     $.ajax({
         type: "POST",
-        url: window.location.origin + "/comfychat/chat/",
+        url: window.location.origin + "/services/api/chat/",
         headers: { 'X-CSRFToken': csrftoken },
         data: formData,
         processData: false,
@@ -209,7 +209,7 @@ function chatSubmit(e) {
             setTimeout(function () {
                 $('.text-loader').remove();
                 $('#chatbot-body').append(generateChatbotBody(type = "bot"));
-                $('.chatbot-body-text-p-bot').last().append(response.description);
+                $('.chatbot-body-text-p-bot').last().append(response.data.chatResponse);
                 resetChatbotTextarea();
                 clearFileSelection();
             }, 1000);

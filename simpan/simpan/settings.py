@@ -34,6 +34,13 @@ env = environ.Env(
     LOG_LEVEL=(str, "INFO"),
     LOG_DIR=(str, "logs"),
 
+    # Relational Database
+    PGDATABASE=(str, "simpan"),
+    PGUSER=(str, "simpan"),
+    PGPASSWORD=(str, "simpan"),
+    PGHOST=(str, "localhost"),
+    PGPORT=(str, "5432"),
+
     # Langchain
     LANGCHAIN_TRACING_V2=(bool, True),
     LANGCHAIN_ENDPOINT=(str, "https://api.smith.langchain.com"),
@@ -77,11 +84,13 @@ INSTALLED_APPS = [
 
     # Third party apps
     'rest_framework',
+    'drf_spectacular',
 
     # Apps
     'home.apps.HomeConfig',
     'comfyui.apps.ComfyuiConfig',
     'comfychat.apps.ComfychatConfig',
+    'services.apps.ServicesConfig',
 ]
 
 MIDDLEWARE = [
@@ -116,35 +125,35 @@ WSGI_APPLICATION = 'simpan.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 '''
 To install postgres using docker:
 
-docker run -d --name postgres -p 5499:5432 \                                                                                                                   tyche@tyche
--e POSTGRES_USER=portfolio \
--e POSTGRES_PASSWORD=portfolio \
--e POSTGRES_DB=portfolio \
+docker run -d --name postgres -p 5499:5432 \
+-e POSTGRES_USER=simpan \
+-e POSTGRES_PASSWORD=simpan \
+-e POSTGRES_DB=simpan \
+-v ./data/volumes/pg-data:/var/lib/postgresql/data \
 postgres:latest
 
 '''
 # Use postgres.
-#
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': os.getenv('PGDATABASE', 'postgres'),
-#         'USER': os.getenv('PGUSER', 'postgres'),
-#         'PASSWORD': os.getenv('PGPASSWORD', 'postgres'),
-#         'HOST': os.getenv('PGHOST', '127.0.0.1'),
-#         'PORT': os.getenv('PGPORT', '5432'),
-#     },
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': env("PGDATABASE"),
+        'USER': env("PGUSER"),
+        'PASSWORD': env("PGPASSWORD"),
+        'HOST': env("PGHOST"),
+        'PORT': env("PGPORT"),
+    },
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -162,7 +171,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
@@ -190,6 +198,17 @@ MEDIA_ROOT = BASE_DIR / env("MEDIA_ROOT")
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Django Rest Framework
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'SimPan API',
+    'DESCRIPTION': 'API for SimPan project.',
+    'VERSION': '1.0.0',
+}
 
 # Celery with rabbitmq configuration.
 '''

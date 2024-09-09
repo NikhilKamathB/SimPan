@@ -3,6 +3,8 @@
 
 ### Misc ###
 *.png
+**/volumes/**
+*.env*
 !**/backup/**
 !**/static/**
 **/static/*/litegraph*

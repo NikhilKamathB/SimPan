@@ -23,6 +23,7 @@ urlpatterns = [
     path('', include('home.urls')),
     path('comfyui/', include('comfyui.urls')),
     path('comfychat/', include('comfychat.urls')),
+    path('services/', include('services.urls')),
     path('admin/', admin.site.urls),
 ]
 
