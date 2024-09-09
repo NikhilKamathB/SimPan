@@ -1,9 +1,2 @@
-INITIATED = "Initiated"
-COMPLETED = "Completed"
-ABORTED = "Aborted"
-CELERY_TASK_STATUS = {
-    INITIATED: "Initiated",
-    COMPLETED: "Completed",
-    ABORTED: "Aborted"
-}
+# Task definitions
 SDC_TASK = "sdc_task"

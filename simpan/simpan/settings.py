@@ -85,8 +85,10 @@ INSTALLED_APPS = [
     # Third party apps
     'rest_framework',
     'drf_spectacular',
+    'django_json_widget',
 
     # Apps
+    'db.apps.DbConfig',
     'home.apps.HomeConfig',
     'comfyui.apps.ComfyuiConfig',
     'comfychat.apps.ComfychatConfig',
@@ -253,12 +255,27 @@ LOGGING = {
             "level": env("LOG_LEVEL"),
             "propagate": True,
         },
+        "db": {
+            "handlers": ["file", "console"],
+            "level": env("LOG_LEVEL"),
+            "propagate": True,
+        },
         "home": {
             "handlers": ["file", "console"],
             "level": env("LOG_LEVEL"),
             "propagate": True,
         },
         "comfyui": {
+            "handlers": ["file", "console"],
+            "level": env("LOG_LEVEL"),
+            "propagate": True,
+        },
+        "comfychat": {
+            "handlers": ["file", "console"],
+            "level": env("LOG_LEVEL"),
+            "propagate": True,
+        },
+        "services": {
             "handlers": ["file", "console"],
             "level": env("LOG_LEVEL"),
             "propagate": True,

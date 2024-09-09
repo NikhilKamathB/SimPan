@@ -1,10 +1,10 @@
 import json
 from typing import Union
-from comfyui.models import CeleryTask
 from workers.validators import Status
 from workers.sdc import app as sdc_app
 from simpan.validator import ResponseValidator
-from comfyui.constants import COMPLETED, SDC_TASK
+from comfyui.constants import SDC_TASK
+from db.models import CeleryTask, CeleryTaskStatus
 from workers.validators import ExchangeName, RoutingKey
 from django.http import HttpResponse, HttpResponseServerError
 
@@ -40,6 +40,6 @@ def trigger_sdc_task(task_name: str, body: dict) -> dict:
         queue_name=ExchangeName.SDC.value
     )
     result = task.get()
-    sdc_task_object.status = COMPLETED
+    sdc_task_object.status = CeleryTaskStatus.COMPLETED
     sdc_task_object.save()
     return result

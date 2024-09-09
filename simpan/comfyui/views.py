@@ -3,9 +3,8 @@ from typing import Union
 from django.shortcuts import render
 from celery.exceptions import TaskRevokedError
 from django.http import HttpResponse, HttpResponseServerError
-from comfyui.models import CeleryTask
+from db.models import CeleryTask, CeleryTaskStatus
 from workers.sdc import app as sdc_app
-from comfyui.constants import INITIATED, ABORTED
 from comfyui.utils import make_message_response, return_http_response, generate_celery_response, trigger_sdc_task
 
 
@@ -51,10 +50,10 @@ def carla_synthetic_data_report_generator(request):
 
 def abort(request):
     if request.method == "DELETE":
-        tasks = CeleryTask.objects.filter(status=INITIATED)
+        tasks = CeleryTask.objects.filter(status=CeleryTaskStatus.INITIATED)
         for task in tasks:
             sdc_app.control.revoke(task.task_id, terminate=True)
-        tasks.update(status=ABORTED)
+        tasks.update(status=CeleryTaskStatus.ABORTED)
         return return_http_response(
             make_message_response("Task aborted successfully.")
         )
