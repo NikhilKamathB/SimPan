@@ -31,6 +31,7 @@ env = environ.Env(
     SUBMODULES_DIR=(str, "third_party"),
     LITEGRAPH_DIR=(str, "litegraph"),
     SDC_DIR=(str, "SDC"),
+    PDF_DIR=(str, "pdf"),
     LOG_LEVEL=(str, "INFO"),
     LOG_DIR=(str, "logs"),
 
@@ -287,3 +288,4 @@ LOGGING = {
 SUBMODULES_DIR = BASE_DIR.parent / env("SUBMODULES_DIR")
 LITEGRAPH_DIR = env("LITEGRAPH_DIR")
 SDC_DIR = env("SDC_DIR")
+PDF_DIR = env("PDF_DIR")

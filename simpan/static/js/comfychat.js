@@ -55,7 +55,7 @@ function auto_grow(element) {
 }
 /*=========================================================*/
 
-/*==================== File Upload ====================*/
+/*================ File Upload and display ================*/
 function getFileExtension(filename) {
     return filename.split('.').pop().toUpperCase();
 }
@@ -77,13 +77,16 @@ function handleFileSelect(event) {
     event.target.value = '';
 }
 
-function updateFileList() {
-    const $fileList = $('#selected-files').empty();
+function updateFileList(id='#selected-files', showRemove = true) {
+    const $fileList = $(id).empty();
     selectedFiles.forEach((file, index) => {
         const $thumbnail = $('<div>').addClass('d-flex justify-content-between align-items-center file-thumbnail');
-        const $img = $('<img>').attr('src', URL.createObjectURL(file));
         const $extension = $('<div>').addClass('file-extension').text(getFileExtension(file.name));
-        const $removeBtn = $('<div>').addClass('remove-file').html('&times;').click(() => removeFile(index));
+        $thumbnail.append($extension);
+        if (showRemove) {
+            const $removeBtn = $('<div>').addClass('remove-file').html('&times;').click(() => removeFile(index));
+            $thumbnail.append($removeBtn);
+        }
         if (file.type.startsWith('image/') || (file.type === 'application/pdf')) {
             const $img = $('<img>').attr('src', URL.createObjectURL(file));
             $thumbnail.append($img);
@@ -91,8 +94,31 @@ function updateFileList() {
             const $icon = $('<i>').addClass('fa-solid fa-file fa-custom-style');
             $thumbnail.append($icon);
         }
-        $thumbnail.append($extension, $removeBtn);
         $fileList.append($thumbnail);
+    });
+}
+
+function updateWorkspaceMetaView() {
+    const $metaView = $('#selected-files-view').empty();
+    window.workspaceFiles.forEach((file, index) => {
+        const $thumbnail = $('<div>').addClass('d-flex justify-content-between align-items-center file-thumbnail file-thumbnail-view');
+        $thumbnail.attr('id', `${file.id}`);
+        const $extension = $('<div>').addClass('file-extension').text(getFileExtension(file.type.toUpperCase()));
+        if (file.type.match(/(jpg|jpeg|png|gif|pdf)$/i)) {
+            const $img = $('<img>').attr('src', file.url);
+            $thumbnail.append($img);
+        } else {
+            const $icon = $('<i>').addClass('fa-solid fa-file fa-custom-style');
+            $thumbnail.append($icon);
+        }
+        $thumbnail.append($extension);
+        $thumbnail.click(() => {
+            if (file.type.match(/(pdf)$/i)) {
+                const _ = $('#workspace-body-main').empty();
+                renderPDF(file.url, 'workspace-body-main');
+            }
+        });
+        $metaView.append($thumbnail);
     });
 }
 
@@ -206,12 +232,18 @@ function chatSubmit(e) {
         processData: false,
         contentType: false,
         success: function (response) {
+            if (response.data.files) {
+                response.data.files.forEach(file => {
+                    window.workspaceFiles.push(file);
+                });
+            }
             setTimeout(function () {
                 $('.text-loader').remove();
                 $('#chatbot-body').append(generateChatbotBody(type = "bot"));
                 $('.chatbot-body-text-p-bot').last().append(response.data.chatResponse);
                 resetChatbotTextarea();
                 clearFileSelection();
+                updateWorkspaceMetaView();
             }, 1000);
         },
         error: function (response) {

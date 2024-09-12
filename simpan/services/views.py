@@ -6,7 +6,8 @@ from drf_spectacular.types import OpenApiTypes
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 from drf_spectacular.utils import extend_schema, OpenApiExample
-from services.validators import APIResponse, ChatResponse, BaseError
+from db.models import Workspace, WorkspaceStorage
+from services.validators import APIResponse, ChatResponse, BaseFileStruct, BaseErrorStruct
 
 
 @extend_schema(
@@ -79,12 +80,32 @@ def chat(request):
         if not query:
             raise BadRequest("You have not provided a query.")
         workspace_id = request.POST.get("workspace_id")
-        uploaded_files = request.FILES.getlist("files")
-        response_html = markdown(query)
+        workspace_obj, created = Workspace.objects.get_or_create(id=workspace_id)
+        if created: request.session["workspace"] = str(workspace_obj.id)
+        if workspace_obj.conversation:
+            workspace_obj.conversation.append({"query": query})
+        else:
+            workspace_obj.conversation = [{"query": query}]
+        for _, f in request.FILES.items():
+            WorkspaceStorage.objects.create(workspace=workspace_obj, file=f).save()
+        response = query
+        response_html = markdown(response)
+        workspace_obj.conversation.append({"response": response})
+        workspace_obj.save()
+        files = None
+        if request.FILES:
+            workspace_updated_files_obj = WorkspaceStorage.objects.filter(workspace=workspace_obj)
+            files = [
+                BaseFileStruct(id=str(f.id), name=f.file.name, url=f.file.url, type=f.file.name.split(".")[-1].lower())
+                for f in workspace_updated_files_obj
+            ]
         return JsonResponse(
             APIResponse(
                 success=True, message="Chat response generated successfully",
-                data=ChatResponse(chatResponse=response_html).model_dump(),
+                data=ChatResponse(
+                    chatResponse=response_html,
+                    files=files
+                ).model_dump(),
             ).model_dump(),
             status=status.HTTP_200_OK
         )
@@ -92,7 +113,7 @@ def chat(request):
         return JsonResponse(
             APIResponse(
                 success=False, message="An error occurred",
-                data=BaseError(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message=str(e)).model_dump(),
+                data=BaseErrorStruct(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message=str(e)).model_dump(),
             ).model_dump(),
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )

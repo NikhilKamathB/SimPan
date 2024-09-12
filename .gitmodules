@@ -4,3 +4,6 @@
 [submodule "third_party/SDC"]
 	path = third_party/SDC
 	url = git@github.com:NikhilKamathB/SDC.git
+[submodule "third_party/pdf"]
+	path = third_party/pdf
+	url = git@github.com:mozilla/pdf.js.git

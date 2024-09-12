@@ -11,38 +11,31 @@
 {% block body %}
 
 <div class="container d-flex justify-content-center align-items-center main-container">
-    <div class="row">
+    <div class="row main-container-row">
         <div class="col workspace-container">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <ul class="d-flex nav nav-tabs workspace-tab" id="workspace-tab" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <a class="nav-link active" id="workspace-1-tab" type="button" data-bs-toggle="tab" data-bs-target="#workspace-1" aria-controls="workspace-1" aria-selected="true">Workspace 1</a>
+                        <a class="nav-link active" id="{{ workspace }}" type="button" data-bs-toggle="tab" data-bs-target="#workspace-1" aria-controls="workspace-1" aria-selected="true">Workspace 1</a>
                     </li>
                 </ul>
                 <a type="button" id="workspace-add" data-toggle="workspace-tooltip" data-placement="top" title="Add a new workspace"><i class="uil uil-plus-circle fa-custom-style fa-workspace" id="fa-plus-circle"></i></a>
             </div>
             <div class="tab-content workspace-tab-content" id="workspace-tab-content">
-                <div class="tab-pane fade show active workspace-tab-pane" id="workspace-1" aria-labelledby="workspace-1-tab">
-                    <div class="container-fluid workspace-display">
-                        <div id="workspace-display-grid" class="row">
-                            <div class="col-1 workspace-thumbnail">
-                            </div>
-                            <div class="col-10 workspace-viewport">
-                                <div class="container workspace-body">
-                                    <div class="container workspace-body-header">
-                                    </div>
-                                    <div class="container workspace-body-main">
-                                        <p>
-                                            Hello world
-                                        </p>
-                                    </div>
-                                    <div class="container workspace-body-footer">
-                                    </div>
+                <div class="tab-pane fade show active workspace-tab-pane" id="workspace-1" aria-labelledby="{{ workspace }}">
+                    <div id="workspace-display-container">
+                        <div class="justify-content-between align-items-center workspace-viewport m-3">
+                            <div class="container workspace-body p-0">
+                                <div class="container workspace-body-header"></div>
+                                <div id="workspace-body-main" class="d-flex justify-content-between align-items-center workspace-body-main">
+                                    <p>
+                                        Hello world
+                                    </p>
                                 </div>
-                            </div>
-                            <div class="col-1 workspace-thumbnail-end">
+                                <div class="container workspace-body-footer"></div>
                             </div>
                         </div>
+                        <div id="selected-files-view" class="selected-files-view workspace-metaview m-3"></div>
                     </div>
                 </div>
             </div>
@@ -80,6 +73,11 @@
 {% endblock body %}
 
 {% block js %}
-<script src="{% static 'js/comfychat.js' %}"></script>
+<script type="module" src="{% static 'js/pdf.mjs' %}"></script>
 <script type="module" src="{% static 'js/utils.js' %}"></script>
+<script src="{% static 'js/comfychat.js' %}"></script>
+<script>
+    window.workspaceFiles = JSON.parse('{{ workspace_files|escapejs }}');
+    updateWorkspaceMetaView();
+</script>
 {% endblock js %}
