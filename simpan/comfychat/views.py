@@ -18,6 +18,7 @@ def index(request):
     ]
     context = {
         "workspace": str(workspace_obj.id),
-        "workspace_files": json.dumps(workspace_files_obj_list)
+        "workspace_files": json.dumps(workspace_files_obj_list),
+        "workspace_chat": json.dumps(workspace_obj.conversation)
     }
     return render(request, "comfychat/comfychat.html", context)

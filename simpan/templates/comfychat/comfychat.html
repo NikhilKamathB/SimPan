@@ -13,7 +13,7 @@
 <div class="container d-flex justify-content-center align-items-center main-container">
     <div class="row main-container-row">
         <div class="col workspace-container">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex justify-content-between align-items-center">
                 <ul class="d-flex nav nav-tabs workspace-tab" id="workspace-tab" role="tablist">
                     <li class="nav-item" role="presentation">
                         <a class="nav-link active" id="{{ workspace }}" type="button" data-bs-toggle="tab" data-bs-target="#workspace-1" aria-controls="workspace-1" aria-selected="true">Workspace 1</a>
@@ -27,7 +27,7 @@
                         <div class="justify-content-between align-items-center workspace-viewport m-3">
                             <div class="container workspace-body p-0">
                                 <div class="container workspace-body-header"></div>
-                                <div id="workspace-body-main" class="d-flex justify-content-between align-items-center workspace-body-main">
+                                <div id="workspace-body-main" class="justify-content-between align-items-center workspace-body-main">
                                     <p>
                                         Hello world
                                     </p>
@@ -35,7 +35,7 @@
                                 <div class="container workspace-body-footer"></div>
                             </div>
                         </div>
-                        <div id="selected-files-view" class="selected-files-view workspace-metaview m-3"></div>
+                        <div id="selected-files-view" class="d-flex justify-content-between align-items-center selected-files-view workspace-metaview px-2"></div>
                     </div>
                 </div>
             </div>
@@ -78,6 +78,10 @@
 <script src="{% static 'js/comfychat.js' %}"></script>
 <script>
     window.workspaceFiles = JSON.parse('{{ workspace_files|escapejs }}');
-    updateWorkspaceMetaView();
+    $(document).ready(function() {
+        updateWorkspaceMetaView();
+        generateInitialWorkspaceFileDisplay();
+        generateInitialChatbotBody(JSON.parse('{{ workspace_chat|escapejs }}'));
+    });
 </script>
 {% endblock js %}

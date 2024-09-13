@@ -13,7 +13,7 @@
 }
 
 .workspace-container {
-    padding: 2rem 1rem;
+    padding-top: 1rem;
     border-radius: var(--default-border-radius);
     overflow-y: hidden;
 }
@@ -36,6 +36,7 @@
     overflow-x: none;
     overflow-y: auto;
     margin-right: 1rem;
+    min-width: 95%;
 }
 
 .workspace-tab-content {
@@ -212,14 +213,15 @@
 }
 
 .selected-files-view {
-    display: flex;
     flex-wrap: nowrap;
     overflow-x: auto;
     white-space: nowrap;
+    padding: .5rem;
+    max-width: 85%;
 }
 
 .selected-files-view::-webkit-scrollbar {
-    height: 7px;
+    height: 5px;
 }
 
 .pdf-thumbnails::-webkit-scrollbar {
@@ -244,14 +246,15 @@
     width: 100px;
     height: 100px;
     border: 1px solid var(--default-border-color);
-    border-radius: .75rem;
-    margin-bottom: .5rem;
+    border-radius: var(--default-border-squared-radius);
+    margin: .5rem 0;
     overflow: hidden;
 }
 
 .file-thumbnail-view {
     width: 65px;
     height: 65px;
+    cursor: pointer;
 }
 
 .file-thumbnail img {
@@ -274,6 +277,7 @@
     text-align: center;
     padding: 2px 0;
     font-size: 12px;
+    border-radius: 0 0 var(--default-border-squared-radius) var(--default-border-squared-radius);
 }
 
 .remove-file {

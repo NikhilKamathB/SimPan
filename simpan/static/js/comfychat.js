@@ -1,5 +1,6 @@
 /*==================== Variables ====================*/
 let selectedFiles = [];
+let selectedFileId = null;
 /*=========================================================*/
 
 /*==================== Intialize tooltip ====================*/
@@ -79,6 +80,7 @@ function handleFileSelect(event) {
 
 function updateFileList(id='#selected-files', showRemove = true) {
     const $fileList = $(id).empty();
+    $("#chatbot-container-body").animate({ scrollTop: $('#chatbot-body').height() }, "slow");
     selectedFiles.forEach((file, index) => {
         const $thumbnail = $('<div>').addClass('d-flex justify-content-between align-items-center file-thumbnail');
         const $extension = $('<div>').addClass('file-extension').text(getFileExtension(file.name));
@@ -95,6 +97,49 @@ function updateFileList(id='#selected-files', showRemove = true) {
             $thumbnail.append($icon);
         }
         $fileList.append($thumbnail);
+    });
+}
+
+function thumbnailClick(file) {
+    if (file.type.match(/(pdf)$/i)) {
+        const _ = $('#workspace-body-main').empty();
+        renderPDF(file.url, 'workspace-body-main');
+        return true;
+    }
+    return false;
+}
+
+function generateInitialWorkspaceFileDisplay() {
+    if (window.workspaceFiles.length > 0) {
+        for (let file of window.workspaceFiles) {
+            if (thumbnailClick(file)) {
+                selectedFileId = file.id;
+                updateThumbnailStyles();
+                break;
+            }
+        }
+    }
+}
+
+function updateThumbnailStyles() {
+    $('.file-thumbnail-view').each(function () {
+        const $this = $(this);
+        if ($this.attr('id') === `${selectedFileId}`) {
+            $this.css({
+                'transform': 'scale(1.175)',
+                'margin': '.75rem',
+                'box-shadow': '0 0 10px var(--first-color)',
+                'z-index': '1',
+            });
+            this.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        } else {
+            $this.css({
+                'transform': 'scale(1)',
+                'box-shadow': 'none',
+                'z-index': '0',
+                'margin': '0',
+            });
+        }
     });
 }
 
@@ -116,10 +161,21 @@ function updateWorkspaceMetaView() {
             if (file.type.match(/(pdf)$/i)) {
                 const _ = $('#workspace-body-main').empty();
                 renderPDF(file.url, 'workspace-body-main');
+                selectedFileId = file.id;
+                updateThumbnailStyles();
             }
         });
         $metaView.append($thumbnail);
     });
+    if ($metaView.children().length > 0) {
+        $metaView.css({
+            'border-top-left-radius': 'var(--default-border-squared-radius)',
+            'border-top-right-radius': 'var(--default-border-squared-radius)',
+            'box-shadow': '0 0 5px var(--first-color)',
+            'padding': '.25rem',
+            'margin': 'auto'
+        });
+    }
 }
 
 function clearFileSelection() {
@@ -194,6 +250,29 @@ function resetChatbotTextarea() {
     $('#chatbot-textarea').focus();
 }
 
+function generateInitialChatbotBody(jsonObject) {
+    const botIcon = '<i class="fa-solid fa-robot chatbot-profile-bot"></i>';
+    const userIcon = '<i class="fa-solid fa-user chatbot-profile-user"></i>';
+    jsonObject.forEach((message, index) => {
+        var chatbotBody = `
+            <div class="chatbot-body-text-user" id="section">
+                <div class="chatbot-body-text">
+                    <p class="chatbot-body-text-p-user">${message.query}</p>
+                </div>
+                ${userIcon}
+            </div>
+            <div class="chatbot-body-text-bot" id="section">
+                ${botIcon}
+                <div class="chatbot-body-text">
+                    <p class="chatbot-body-text-p-bot">${message.response}</p>
+                </div>
+            </div>
+        `
+        $('#chatbot-body').append(chatbotBody);
+    });
+    resetChatbotTextarea();
+}
+
 function getCurrentWorkspaceId() {
     const activeTab = $('#workspace-tab .nav-link.active');
     if (activeTab.length) {
@@ -234,7 +313,9 @@ function chatSubmit(e) {
         success: function (response) {
             if (response.data.files) {
                 response.data.files.forEach(file => {
-                    window.workspaceFiles.push(file);
+                    if (!window.workspaceFiles.some(existingFile => existingFile.id === file.id)) {
+                        window.workspaceFiles.push(file);
+                    }
                 });
             }
             setTimeout(function () {
@@ -242,8 +323,12 @@ function chatSubmit(e) {
                 $('#chatbot-body').append(generateChatbotBody(type = "bot"));
                 $('.chatbot-body-text-p-bot').last().append(response.data.chatResponse);
                 resetChatbotTextarea();
-                clearFileSelection();
                 updateWorkspaceMetaView();
+                if (selectedFiles.length > 0) {
+                    selectedFileId = window.workspaceFiles[window.workspaceFiles.length - 1].id;
+                    updateThumbnailStyles();
+                }
+                clearFileSelection();
             }, 1000);
         },
         error: function (response) {

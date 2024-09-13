@@ -26,9 +26,8 @@ function renderPDF(url, divID) {
     let pdf = null;
     let currentPage = 1;
     let isRendering = false;
-
     const divContainer = document.getElementById(divID);
-    divContainer.innerHTML = ''; // Clear existing content
+    divContainer.innerHTML = '';
 
     // Create a wrapper for the entire PDF viewer
     const pdfViewerWrapper = document.createElement('div');
@@ -60,6 +59,7 @@ function renderPDF(url, divID) {
     canvas.classList.add('pdf-canvas');
     mainContent.appendChild(canvas);
 
+    // Buttons
     const prevButton = controls.querySelector('#prev-page');
     const nextButton = controls.querySelector('#next-page');
     const pageNum = controls.querySelector('#page-num');
@@ -68,25 +68,20 @@ function renderPDF(url, divID) {
     function renderPage(pageNumber) {
         if (isRendering) return;
         isRendering = true;
-
         pdf.getPage(pageNumber).then(function (page) {
             const context = canvas.getContext('2d');
             // Get the dimensions of the parent element
             const parentWidth = mainContent.clientWidth;
             const parentHeight = mainContent.clientHeight;
-
             // Get the original dimensions of the PDF page
             const originalViewport = page.getViewport({ scale: 1.10 });
-
             // Calculate the scale to fit the canvas to its parent
             const scaleX = parentWidth / originalViewport.width;
             const scaleY = parentHeight / originalViewport.height;
             const scale = Math.min(scaleX, scaleY);
-
             const viewport = page.getViewport({ scale: scale });
             canvas.height = viewport.height;
             canvas.width = viewport.width;
-
             const renderContext = {
                 canvasContext: context,
                 viewport: viewport
@@ -103,6 +98,7 @@ function renderPDF(url, divID) {
         });
     }
 
+    // Change page
     function changePage(delta) {
         const newPage = currentPage + delta;
         if (newPage >= 1 && newPage <= pdf.numPages) {
@@ -126,6 +122,7 @@ function renderPDF(url, divID) {
         touchStartY = e.touches[0].clientY;
     }, { passive: true });
 
+    // Touch move event
     mainContent.addEventListener('touchmove', (e) => {
         const touchEndY = e.touches[0].clientY;
         const delta = touchStartY - touchEndY;
@@ -191,7 +188,6 @@ function renderPDF(url, divID) {
         if (thumbnail) {
             const thumbnailRect = thumbnail.getBoundingClientRect();
             const sectionRect = thumbnailsSection.getBoundingClientRect();
-
             if (thumbnailRect.top < sectionRect.top || thumbnailRect.bottom > sectionRect.bottom) {
                 thumbnail.scrollIntoView({
                     behavior: 'auto',

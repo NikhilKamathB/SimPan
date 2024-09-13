@@ -82,15 +82,18 @@ def chat(request):
         workspace_id = request.POST.get("workspace_id")
         workspace_obj, created = Workspace.objects.get_or_create(id=workspace_id)
         if created: request.session["workspace"] = str(workspace_obj.id)
-        if workspace_obj.conversation:
-            workspace_obj.conversation.append({"query": query})
-        else:
-            workspace_obj.conversation = [{"query": query}]
+        conversation = {
+            "query": query,
+        }
         for _, f in request.FILES.items():
             WorkspaceStorage.objects.create(workspace=workspace_obj, file=f).save()
         response = query
         response_html = markdown(response)
-        workspace_obj.conversation.append({"response": response})
+        conversation["response"] = response
+        if workspace_obj.conversation:
+            workspace_obj.conversation.append(conversation)
+        else:
+            workspace_obj.conversation = [conversation]
         workspace_obj.save()
         files = None
         if request.FILES:
