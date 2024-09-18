@@ -46,8 +46,8 @@ class WorkspaceAdmin(admin.ModelAdmin):
     }
 
     model = Workspace
-    list_display = ("id", "file_count", "created_at", "updated_at")
-    search_fields = ("id",)
+    list_display = ("id", "user", "file_count", "created_at", "updated_at")
+    search_fields = ("id", "user__username", "user__email")
     list_filter = ("created_at", "updated_at")
     inlines = [WorkspaceStorageInline]
 

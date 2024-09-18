@@ -1,12 +1,14 @@
 from markdown import markdown
 from rest_framework import status
 from django.http import JsonResponse
+from rest_framework import viewsets, mixins
 from django.core.exceptions import BadRequest
 from drf_spectacular.types import OpenApiTypes
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser
-from drf_spectacular.utils import extend_schema, OpenApiExample
+from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
 from db.models import Workspace, WorkspaceStorage
+from services.serializers import WorkspaceSerializer
 from services.validators import APIResponse, ChatResponse, BaseFileStruct, BaseErrorStruct
 
 
@@ -51,7 +53,16 @@ from services.validators import APIResponse, ChatResponse, BaseFileStruct, BaseE
                 "success": True,
                 "message": "Success",
                 "data": {
-                    "chatResponse": "<p>This is a chat response - in HTML format</p>"
+                    "workspace_id": "<ID>",
+                    "chat_response": "<p>This is a chat response - in HTML format</p>",
+                    "files": [
+                        {
+                            "id": "1",
+                            "name": "file1.pdf",
+                            "url": "http://localhost:8000/media/file1.pdf",
+                            "type": "pdf"
+                        },
+                    ]
                 }
             },
             response_only=True,
@@ -63,12 +74,25 @@ from services.validators import APIResponse, ChatResponse, BaseFileStruct, BaseE
                 "success": False,
                 "message": "An error occurred",
                 "data": {
+                    "code": 400,
+                    "message": "Bad Request"
+                }
+            },
+            response_only=True,
+            status_codes=['400'],
+        ),
+        OpenApiExample(
+            'Internal Server Error',
+            value={
+                "success": False,
+                "message": "An error occurred",
+                "data": {
                     "code": 500,
                     "message": "Internal Server Error"
                 }
             },
             response_only=True,
-            status_codes=['400', '500'],
+            status_codes=['500'],
         ),
     ],
 )
@@ -80,13 +104,16 @@ def chat(request):
         if not query:
             raise BadRequest("You have not provided a query.")
         workspace_id = request.POST.get("workspace_id")
-        workspace_obj, created = Workspace.objects.get_or_create(id=workspace_id)
-        if created: request.session["workspace"] = str(workspace_obj.id)
+        workspace_obj, created = Workspace.objects.get_or_create(
+            id=workspace_id)
+        if created:
+            request.session["workspace"] = str(workspace_obj.id)
         conversation = {
             "query": query,
         }
         for _, f in request.FILES.items():
-            WorkspaceStorage.objects.create(workspace=workspace_obj, file=f).save()
+            WorkspaceStorage.objects.create(
+                workspace=workspace_obj, file=f).save()
         response = query
         response_html = markdown(response)
         conversation["response"] = response
@@ -97,16 +124,19 @@ def chat(request):
         workspace_obj.save()
         files = None
         if request.FILES:
-            workspace_updated_files_obj = WorkspaceStorage.objects.filter(workspace=workspace_obj)
+            workspace_updated_files_obj = WorkspaceStorage.objects.filter(
+                workspace=workspace_obj)
             files = [
-                BaseFileStruct(id=str(f.id), name=f.file.name, url=f.file.url, type=f.file.name.split(".")[-1].lower())
+                BaseFileStruct(id=str(f.id), name=f.file.name,
+                               url=f.file.url, type=f.file.name.split(".")[-1].lower())
                 for f in workspace_updated_files_obj
             ]
         return JsonResponse(
             APIResponse(
                 success=True, message="Chat response generated successfully",
                 data=ChatResponse(
-                    chatResponse=response_html,
+                    workspace_id=str(workspace_obj.id),
+                    chat_response=response_html,
                     files=files
                 ).model_dump(),
             ).model_dump(),
@@ -116,7 +146,149 @@ def chat(request):
         return JsonResponse(
             APIResponse(
                 success=False, message="An error occurred",
-                data=BaseErrorStruct(code=status.HTTP_500_INTERNAL_SERVER_ERROR, message=str(e)).model_dump(),
+                data=BaseErrorStruct(
+                    code=status.HTTP_500_INTERNAL_SERVER_ERROR, message=str(e)).model_dump(),
             ).model_dump(),
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+
+class WorkspaceViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin):
+
+    queryset = Workspace.objects.all()
+    serializer_class = WorkspaceSerializer
+
+    @extend_schema(
+        summary="List all workspaces",
+        description="Retrieve a list of all workspaces",
+        responses={
+            200: OpenApiResponse(
+                response=OpenApiTypes.OBJECT,
+                examples=[
+                    OpenApiExample(
+                        'Success Response',
+                        value={
+                            "success": True,
+                            "message": "Workspace list API",
+                            "data": [
+                                {
+                                    "id": "<ID>",
+                                    "workspace_files": [
+                                        {
+                                            "id": "<ID>",
+                                            "file": "<FILE>",
+                                            "created_at": "<CREATED_AT>",
+                                            "updated_at": "<UPDATED_AT>",
+                                            "workspace": "<WORKSPACE_ID>"
+                                        }
+                                    ],
+                                    "conversation": [
+                                        {
+                                            "query": "<QUERY>",
+                                            "response": "<RESPONSE>"
+                                        }
+                                    ],
+                                    "name": "<NAME>",
+                                    "created_at": "<CREATED_AT>",
+                                    "updated_at": "<UPDATED_AT>",
+                                    "user": "<USER>"
+                                }
+                            ]
+                        }
+                    )
+                ]
+            )
+        }
+    )
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        return JsonResponse(
+            APIResponse(
+                success=True, message="Workspace list API",
+                data=response.data.serializer.data,
+            ).model_dump(), status=response.status_code)
+
+    @extend_schema(
+        summary="Create a new workspace",
+        description="Create a new workspace with a unique ID",
+        responses={
+            200: OpenApiResponse(
+                response=OpenApiTypes.OBJECT,
+                examples=[
+                    OpenApiExample(
+                        'Success Response',
+                        value={
+                            "success": True,
+                            "message": "Workspace create API",
+                            "data": {
+                                "id": "<ID>",
+                                "conversation": "null",
+                                "name": "<NAME>",
+                                "created_at": "<CREATED_AT>",
+                                "updated_at": "<UPDATED_AT>",
+                                "user": "<USER>"
+                            }
+                        }
+                    )
+                ]
+            ),
+            500: OpenApiResponse(
+                response=OpenApiTypes.OBJECT,
+                examples=[
+                    OpenApiExample(
+                        'Error Response',
+                        value={
+                            "success": False,
+                            "message": "An error occurred",
+                            "data": {
+                                "code": 500,
+                                "message": "Internal Server Error"
+                            }
+                        }
+                    )
+                ]
+            )
+        }
+    )
+    def create(self, request, *args, **kwargs):
+        try:
+            response = super().create(request, *args, **kwargs)
+            return JsonResponse(
+                APIResponse(
+                    success=True, message="Workspace create API",
+                data=response.data.serializer.data,
+            ).model_dump(), status=response.status_code)
+        except Exception as e:
+            return JsonResponse(
+                APIResponse(
+                    success=False, message="An error occurred while creating workspace",
+                    data=BaseErrorStruct(
+                        code=status.HTTP_500_INTERNAL_SERVER_ERROR, message=str(e)).model_dump(),
+                ).model_dump(),
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @extend_schema(
+        summary="Delete a workspace",
+        description="Delete a workspace by ID",
+        responses={
+            200: OpenApiResponse(
+                response=OpenApiTypes.OBJECT,
+                examples=[
+                    OpenApiExample(
+                        'Success Response',
+                        value={
+                            "success": True,
+                            "message": "Workspace delete API",
+                        }
+                    )
+                ]
+            )
+        }
+    )
+    def destroy(self, request, *args, **kwargs):
+        response = super().destroy(request, *args, **kwargs)
+        return JsonResponse(
+            APIResponse(
+                success=True, message="Workspace delete API"
+            ).model_dump(), status=response.status_code)

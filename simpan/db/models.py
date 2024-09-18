@@ -1,5 +1,6 @@
 import uuid
 from django.db import models
+from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 from db.utils import get_workspace_file_path
 
@@ -52,8 +53,9 @@ class Workspace(models.Model):
         verbose_name_plural = "Workspaces"
 
     id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
-    name = models.CharField(max_length=255, null=True, blank=True)
     conversation = models.JSONField(null=True, blank=True)
+    name = models.CharField(max_length=255, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="workspace_user")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

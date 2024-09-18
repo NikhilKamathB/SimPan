@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Union
 
 
 class BaseErrorStruct(BaseModel):
@@ -15,11 +15,12 @@ class BaseFileStruct(BaseModel):
 
 
 class ChatResponse(BaseModel):
-    chatResponse: str
+    workspace_id: str
+    chat_response: str
     files: Optional[List[BaseFileStruct]] = None
 
 
 class APIResponse(BaseModel):
     success: bool
     message: str
-    data: dict = None
+    data: Union[dict, List[dict]] = None

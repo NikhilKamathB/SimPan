@@ -1,6 +1,10 @@
+.offcanvas-ws  {
+    height:100vh;
+    height: 100vh; 
+}
+
 .main-container {
     max-width: 100%;
-    height: 100vh; 
 }
 
 .main-container-row {
@@ -12,10 +16,29 @@
     height: 100vh;
 }
 
+.workspace-accordion {
+    box-shadow: 0 0 var(--default-border-thin-thickness) var(--first-color);
+}
+
+.accordian-workspace, .workspace-tab, .pdf-thumbnails, .chatbot-container-body {
+    overflow-y: auto;
+}
+
+.workspace-accordion-table {
+    width: 85%;
+}
+
 .workspace-container {
     padding-top: 1rem;
     border-radius: var(--default-border-radius);
     overflow-y: hidden;
+}
+
+.workspace-heading {
+    margin-left: 1.75rem;
+    margin-right: 1.75rem;
+    width: 90%;
+    border-bottom: var(--default-border-thickness) solid var(--first-color);
 }
 
 .workspace-tab, .chatbot-container-body {
@@ -34,9 +57,8 @@
     flex-wrap: nowrap;
     white-space: nowrap;
     overflow-x: none;
-    overflow-y: auto;
     margin-right: 1rem;
-    min-width: 95%;
+    min-width: 85%;
 }
 
 .workspace-tab-content {
@@ -63,7 +85,6 @@
     margin: .5rem;
     padding: .5rem;
     max-width: 15%;
-    overflow-y: auto;
 }
 
 .pdf-main-content {
@@ -102,7 +123,6 @@
 }
 
 .chatbot-container-body {
-    overflow-y: auto;
     border-radius: var(--default-border-radius) var(--default-border-radius) 0 0;
 }
 
@@ -208,29 +228,22 @@
     flex-wrap: wrap;
 }
 
-.selected-files-view, .pdf-thumbnails {
+.selected-files-view, .pdf-thumbnails, .accordian-workspace {
     scrollbar-width: thin;
 }
 
 .selected-files-view {
-    flex-wrap: nowrap;
     overflow-x: auto;
-    white-space: nowrap;
-    padding: .5rem;
-    max-width: 85%;
+    padding-bottom: 1rem;
+    padding-top: 1rem;
 }
 
 .selected-files-view::-webkit-scrollbar {
     height: 5px;
 }
 
-.pdf-thumbnails::-webkit-scrollbar {
+.pdf-thumbnails::-webkit-scrollbar, .offcanvas-body::-webkit-scrollbar {
     width: 5px;
-}
-
-.selected-files-view::-webkit-scrollbar-thumb, .pdf-thumbnails::-webkit-scrollbar-thumb {
-    background-color: var(--first-color);
-    border-radius: var(--default-border-squared-radius);
 }
 
 .pdf-thumbnails::-webkit-scrollbar-thumb {

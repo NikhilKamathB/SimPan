@@ -30,7 +30,7 @@
    {% if messages %}
    <div class="messages">
       {% for message in messages %}
-      <div class="alert alert-dismissible fade show mt-2" role="alert">
+      <div class="alert alert-dismissible fade show mt-0 messages-{{ message.tags }}" role="alert">
          {{ message }}
          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>

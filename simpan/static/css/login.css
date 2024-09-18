@@ -1,0 +1,11 @@
+.main-container {
+    height: 100vh;
+}
+
+.main-container-card {
+    width: 45%;
+}
+
+.main-container-card-body {
+    text-align: left;
+}

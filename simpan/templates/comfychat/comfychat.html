@@ -2,6 +2,8 @@
 
 {% load static %}
 
+{% load json_filter %}
+
 {% block title %}ComfyCHAT{% endblock title %}
 
 {% block css %}
@@ -12,32 +14,22 @@
 
 <div class="container d-flex justify-content-center align-items-center main-container">
     <div class="row main-container-row">
-        <div class="col workspace-container">
-            <div class="d-flex justify-content-between align-items-center">
-                <ul class="d-flex nav nav-tabs workspace-tab" id="workspace-tab" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <a class="nav-link active" id="{{ workspace }}" type="button" data-bs-toggle="tab" data-bs-target="#workspace-1" aria-controls="workspace-1" aria-selected="true">Workspace 1</a>
-                    </li>
-                </ul>
-                <a type="button" id="workspace-add" data-toggle="workspace-tooltip" data-placement="top" title="Add a new workspace"><i class="uil uil-plus-circle fa-custom-style fa-workspace" id="fa-plus-circle"></i></a>
+        <div class="col justify-content-evenly align-items-center p-2 workspace-container">
+            <div class="d-flex justify-content-start align-items-center">
+                <a type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-ws"
+                    aria-controls="offcanvas-ws"><i class="uil uil-bars fa-custom-style fa-workspace"
+                        id="fa-bars"></i></a>
+                <div class="d-flex justify-content-center align-items-center workspace-heading" id="workspace-heading">
+                    <h5>Workspaces</h5>
+                </div>
+                <!-- <form id="workspace-add-form" action="{% url 'comfychat:comfychat' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" id="workspace-add" class="btn btn-icon" data-toggle="workspace-tooltip" data-placement="top"
+                        title="Add a new workspace"><i class="uil uil-plus-circle fa-custom-style fa-workspace"
+                        id="fa-plus-circle"></i></button>
+                </form> -->
             </div>
             <div class="tab-content workspace-tab-content" id="workspace-tab-content">
-                <div class="tab-pane fade show active workspace-tab-pane" id="workspace-1" aria-labelledby="{{ workspace }}">
-                    <div id="workspace-display-container">
-                        <div class="justify-content-between align-items-center workspace-viewport m-3">
-                            <div class="container workspace-body p-0">
-                                <div class="container workspace-body-header"></div>
-                                <div id="workspace-body-main" class="justify-content-between align-items-center workspace-body-main">
-                                    <p>
-                                        Hello world
-                                    </p>
-                                </div>
-                                <div class="container workspace-body-footer"></div>
-                            </div>
-                        </div>
-                        <div id="selected-files-view" class="d-flex justify-content-between align-items-center selected-files-view workspace-metaview px-2"></div>
-                    </div>
-                </div>
             </div>
         </div>
         <div class="col chat-container p-4">
@@ -55,7 +47,8 @@
                                     <i class="fa-solid fa-paperclip fa-custom-style" id="fa-paperclip"></i>
                                 </a>
                             </span>
-                            <textarea wrap="off" class="form-control chatbot-textarea" id="chatbot-textarea" oninput="auto_grow(this)" placeholder="Your message..."></textarea>
+                            <textarea wrap="off" class="form-control chatbot-textarea" id="chatbot-textarea"
+                                oninput="auto_grow(this)" placeholder="Your message..."></textarea>
                             <span class="input-group-addon fa-plane-send-span" id="fa-plane-send-span">
                                 <a class="send-button chatbot-submit" type="submit" id="chatbot-submit">
                                     <i class="fa-solid fa-paper-plane fa-custom-style" id="fa-plane-send"></i>
@@ -70,6 +63,85 @@
     </div>
 </div>
 
+<div class="offcanvas offcanvas-start offcanvas-ws" tabindex="-1" id="offcanvas-ws" aria-labelledby="offcanvas-ws-label">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvas-ws-label">My workspace</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="container mb-2">
+            <strong class="offcanvas-body-title">Workspaces</strong>
+        </div>
+        <div class="workspace-accordion">
+            <div class="accordion accordian-workspace" id="accordian-workspace">
+                {% with parsed_context=context|parse_json %}
+                {% for k, v in parsed_context.items %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading-{{ k }}">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#offcanvas-workspace-{{ k }}" aria-expanded="false"
+                            aria-controls="offcanvas-workspace-{{ k }}">
+                            Workspace {{ forloop.counter }}
+                        </button>
+                    </h2>
+                    <div id="offcanvas-workspace-{{ k }}" class="accordion-collapse collapse"
+                        aria-labelledby="heading-{{ k }}" data-bs-parent="#accordian-workspace">
+                        <div class="accordion-body">
+                            <strong>Workspace meta data</strong>
+                            <hr class="mt-0">
+                            <div class="d-flex justify-content-center align-items-center">
+                                <table class="table workspace-accordion-table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Item</th>
+                                            <th scope="col">Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>ID</td>
+                                            <td><code id="td-id-{{ k }}">{{ k }}</code></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Conversation</td>
+                                            <td><code id="td-conversation-{{ k }}">{{ v.workspace_chat|length }}</code></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Files</td>
+                                            <td><code id="td-files-{{ k }}">{{ v.workspace_files|length }}</code></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Updated At</td>
+                                            <td><code id="td-updated-at-{{ k }}">{{ v.workspace_updated_at }}</code></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Created At</td>
+                                            <td><code id="td-created-at-{{ k }}">{{ v.workspace_created_at }}</code></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex justify-content-around align-items-center">
+                                <a class="btn btn-primary workspace-open-btn" onclick="openWorkspace('{{ k }}')">Open</a>
+                                <form  action="{% url 'comfychat:delete_workspace' %}" method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="workspace_id" value="{{ k }}">
+                                    <button type="submit" class="btn btn-danger workspace-delete-btn">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% endwith %}
+            </div>
+        </div>
+        <div class="d-flex justify-content-center align-items-center m-3">
+            <a type="button" id="workspace-add" class="btn btn-primary">Create New Workspace</a>
+        </div>
+    </div>
+</div>
+
 {% endblock body %}
 
 {% block js %}
@@ -77,11 +149,9 @@
 <script type="module" src="{% static 'js/utils.js' %}"></script>
 <script src="{% static 'js/comfychat.js' %}"></script>
 <script>
-    window.workspaceFiles = JSON.parse('{{ workspace_files|escapejs }}');
-    $(document).ready(function() {
-        updateWorkspaceMetaView();
-        generateInitialWorkspaceFileDisplay();
-        generateInitialChatbotBody(JSON.parse('{{ workspace_chat|escapejs }}'));
+    window.context_data = JSON.parse('{{ context|escapejs }}');
+    $(document).ready(function () {
+        initializeWorkspace();
     });
 </script>
 {% endblock js %}

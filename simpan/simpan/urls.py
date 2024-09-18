@@ -21,6 +21,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('', include('home.urls')),
+    path('account/', include('account.urls')),
     path('comfyui/', include('comfyui.urls')),
     path('comfychat/', include('comfychat.urls')),
     path('services/', include('services.urls')),

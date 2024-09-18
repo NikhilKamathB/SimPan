@@ -8,6 +8,7 @@
 
     /* HSL color variables */
     --first-color: hsl(var(--hue-color), 69%, 61%);
+    --first-color-input-border: hsla(var(--hue-color), 69%, 61%, 0.75);
     --first-color-second: hsl(var(--hue-color), 69%, 61%);
     --first-color-alt: hsl(var(--hue-color), 57%, 53%);
     --first-color-lighter: hsl(var(--hue-color), 92%, 85%);
@@ -17,12 +18,13 @@
     --input-color: hsl(var(--hue-color), 70%, 96%);
     --body-color: hsl(var(--hue-color), 60%, 99%);
     --scroll-bar-color: hsl(var(--hue-color), 12%, 90%);
-    --scroll-thumb-color: hsl(var(--hue-color), 12%, 80%);
+    --scroll-thumb-color: hsl(var(--hue-color), 69%, 61%);
     --default-border-color: hsl(var(--hue-color), 12%, 90%);
-
+    --success-color: hsl(120, 100%, 50%);
+    --error-color: hsl(0, 100%, 50%);
+    --warning-color: hsl(35, 100%, 50%);
     /*========== Font and typography ==========*/
     --body-font: 'Poppins', sans-serif;
-
     /* .5rem = 8px, 1rem = 16px, 1.5rem = 24px ... */
     --big-font-size: 2rem;
     --h1-font-size: 1.5rem;
@@ -33,6 +35,7 @@
     --small-font-size: .813rem;
     --smaller-font-size: .75rem;
     --default-border-thickness: 4px;
+    --default-border-thin-thickness: 2px;
     --default-border-radius: 2.5rem;
     --default-border-squared-radius: .75rem;
 
@@ -109,12 +112,80 @@ ul {
 }
 
 a {
+    color: var(--first-color);
     text-decoration: none;
 }
 
 img {
     max-width: 100%;
     height: auto;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+textarea:focus {
+    /* border-color: var(--first-color); */
+    box-shadow: 0 0 0 0.15rem var(--first-color-input-border);
+}
+
+.btn-primary,
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary.active,
+.btn-primary:active:focus,
+.btn-primary:not(:disabled):not(.disabled):active,
+.btn-primary:not(:disabled):not(.disabled).active,
+.show>.btn-primary.dropdown-toggle {
+    background-color: var(--first-color);
+    border-color: var(--first-color);
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active,
+.btn-primary.active,
+.btn-primary:active:focus {
+    background-color: var(--first-color-alt);
+    border-color: var(--first-color-alt);
+}
+
+.btn-primary:focus,
+.btn-primary.focus,
+.btn-primary:not(:disabled):not(.disabled):active:focus,
+.btn-primary:not(:disabled):not(.disabled).active:focus,
+.show>.btn-primary.dropdown-toggle:focus {
+    box-shadow: 0 0 0 0.2rem rgba(var(--first-color-alt), 0.5);
+}
+
+.messages {
+    color: var(--title-color);
+    background-color: var(--first-color);
+}
+
+.messages-error {
+    background-color: var(--error-color);
+}
+
+.messages-warning {
+    background-color: var(--warning-color);
+}
+
+.messages-success {
+    background-color: var(--success-color);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 /*==================== BASE END ====================*/
 
@@ -123,12 +194,12 @@ img {
     width: .5rem;
     margin: .5rem;
     background-color: var(--scroll-bar-color);
-    border-radius: var(--default-border-squared-radius) 0 0 var(--default-border-squared-radius);
+    border-radius: var(--default-border-radius);
 }
 
 ::-webkit-scrollbar-thumb {
     background-color: var(--scroll-thumb-color);
-    border-radius: var(--default-border-squared-radius) 0 0 var(--default-border-squared-radius);
+    border-radius: var(--default-border-radius);
 }
 
 ::-webkit-scrollbar-thumb:hover {

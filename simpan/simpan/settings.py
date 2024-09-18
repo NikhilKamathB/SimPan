@@ -89,6 +89,7 @@ INSTALLED_APPS = [
     'django_json_widget',
 
     # Apps
+    'account.apps.AccountConfig',
     'db.apps.DbConfig',
     'home.apps.HomeConfig',
     'comfyui.apps.ComfyuiConfig',
