@@ -2,13 +2,14 @@ from markdown import markdown
 from rest_framework import status
 from django.http import JsonResponse
 from rest_framework import viewsets, mixins
+from django.contrib.auth.models import User
 from django.core.exceptions import BadRequest
 from drf_spectacular.types import OpenApiTypes
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
 from db.models import Workspace, WorkspaceStorage
-from services.serializers import WorkspaceSerializer
+from services.serializers import UserSerializer, WorkspaceSerializer
 from services.validators import APIResponse, ChatResponse, BaseFileStruct, BaseErrorStruct
 
 
@@ -151,6 +152,51 @@ def chat(request):
             ).model_dump(),
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+
+
+class UserViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    @extend_schema(
+        summary="List all users",
+        description="Retrieve a list of all users",
+        responses={
+            200: OpenApiResponse(
+                response=OpenApiTypes.OBJECT,
+                examples=[
+                    OpenApiExample(
+                        'Success Response',
+                        value={
+                            "success": True,
+                            "message": "User list API",
+                            "data": [
+                                {
+                                    "id": "<ID>",
+                                    "username": "<USERNAME>",
+                                    "email": "<EMAIL>",
+                                    "first_name": "<FIRST_NAME>",
+                                    "last_name": "<LAST_NAME>",
+                                    "is_active": "<IS_ACTIVE>",
+                                    "is_staff": "<IS_STAFF>",
+                                    "is_superuser": "<IS_SUPERUSER>"
+                                }
+                            ]
+                        }
+                    )
+                ]
+            )
+        }
+    )
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        return JsonResponse(
+            APIResponse(
+                success=True, message="User list API",
+                data=response.data.serializer.data,
+            ).model_dump(), status=response.status_code)
 
 
 class WorkspaceViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin):

@@ -16,12 +16,24 @@
     height: 100vh;
 }
 
-.workspace-accordion {
-    box-shadow: 0 0 var(--default-border-thin-thickness) var(--first-color);
-}
-
 .accordian-workspace, .workspace-tab, .pdf-thumbnails, .chatbot-container-body {
     overflow-y: auto;
+}
+
+.accordion-button {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.workspace-accordion-title {
+    display: inline-block;
+    max-width: calc(100% - 20px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
+    padding-right: 20px;
 }
 
 .workspace-accordion-table {

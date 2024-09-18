@@ -6,6 +6,7 @@ from services import views
 app_name = "services"
 
 router = routers.SimpleRouter()
+router.register(r'api/user', views.UserViewSet, basename='user')
 router.register(r'api/workspace', views.WorkspaceViewSet, basename='workspace')
 
 chat_urlpatterns = [

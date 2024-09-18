@@ -160,8 +160,12 @@ textarea:focus {
 }
 
 .messages {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1050;
     color: var(--title-color);
-    background-color: var(--first-color);
 }
 
 .messages-error {
@@ -176,15 +180,17 @@ textarea:focus {
     background-color: var(--success-color);
 }
 
-@keyframes slideIn {
+.alert.fade.show {
+    animation: slideDown 0.5s ease-in-out;
+}
+
+@keyframes slideDown {
     from {
-        transform: translateX(100%);
-        opacity: 0;
+        transform: translateY(-100%);
     }
 
     to {
-        transform: translateX(0);
-        opacity: 1;
+        transform: translateY(0);
     }
 }
 /*==================== BASE END ====================*/

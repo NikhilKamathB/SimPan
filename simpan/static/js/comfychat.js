@@ -10,7 +10,7 @@ $(document).ready(function () {
 /*=========================================================*/
 
 /*==================== Add/Open/Delete workspace ====================*/
-$('#workspace-add').click(function () {
+function createWorkspace() {
     const csrftoken = window.getCookie('csrftoken');
     $.ajax({
         type: "POST",
@@ -18,15 +18,17 @@ $('#workspace-add').click(function () {
         headers: { 'X-CSRFToken': csrftoken },
         success: function (response) {
             responseData = {
-                "workspace_id": response.data.id,
+                "workspace": response.data.id,
+                "workspace_name": response.data.name,
                 "workspace_files": response.data.workspace_files ? response.data.workspace_files : [],
                 "workspace_chat": response.data.conversation ? response.data.conversation : [],
                 "workspace_created_at": response.data.created_at,
                 "workspace_updated_at": response.data.updated_at
             }
             window.context_data[response.data.id] = responseData;
-            openWorkspace(response.data.id);
-            updateOffcanvasWorkspace(response.data);
+            openWorkspace(window.context_data[response.data.id].workspace);
+            updateOffcanvasWorkspace(window.context_data[response.data.id].workspace);
+            openWorkspaceAccordion(window.context_data[response.data.id].workspace);
         },
         error: function (response) {
             const errorMessage = response.responseJSON.message;
@@ -34,12 +36,15 @@ $('#workspace-add').click(function () {
             alert(capitalizedMessage + " : " + response.responseJSON.data.message);
         }
     });
+}
+
+$('#workspace-add').click(function () {
+    createWorkspace();
 });
 
 function openWorkspace(workspaceID) {
-    var offcanvasElement = document.getElementById('offcanvas-ws');
-    var offcanvas = bootstrap.Offcanvas.getInstance(offcanvasElement);
-    $('#workspace-heading').empty().append(`<h5 data-toggle="workspace-title-tooltip" data-placement="top" title="Workspace ID - ${workspaceID}">My Workspace</h5>`);
+    const workspaceName = window.context_data[workspaceID].workspace_name ? window.context_data[workspaceID].workspace_name : workspaceID;
+    $('#workspace-heading').empty().append(`<h5 data-toggle="workspace-title-tooltip" data-placement="top" title="Workspace ID - ${workspaceID}">${workspaceName}</h5>`);
     $('[data-toggle="workspace-title-tooltip"]').tooltip();
     $('#workspace-tab-content').empty();
     $('#workspace-tab-content').append(`
@@ -59,7 +64,7 @@ function openWorkspace(workspaceID) {
         </div>
     </div>
     `);
-    if (window.context_data[workspaceID].workspace_files.length > 0) {
+    if (window.context_data[workspaceID] && window.context_data[workspaceID].workspace_files && window.context_data[workspaceID].workspace_files.length > 0) {
         const lastFile = window.context_data[workspaceID].workspace_files[window.context_data[workspaceID].workspace_files.length - 1];
         selectedFileId = lastFile.id;
         updateWorkspaceMetaView();
@@ -69,17 +74,30 @@ function openWorkspace(workspaceID) {
     generateInitialChatbotBody(window.context_data[workspaceID].workspace_chat);
 }
 
-$(document).on('click', '.workspace-delete', function () {
-    const parent = $(this).parent();
-    const parentID = parent.attr('id');
-    parent.remove();
-    $(`[data-bs-target="#${parentID}"]`).parent().remove();
-    const lastTab = $('#workspace-tab .nav-link').last();
-    if (lastTab.length) {
-        lastTab.tab('show');
-        lastTab[0].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    }
-});
+function deleteWorkspace(workspaceID) {
+    const csrftoken = window.getCookie('csrftoken');
+    $.ajax({
+        type: "DELETE",
+        url: window.location.origin + "/services/api/workspace/" + workspaceID + "/",
+        headers: { 'X-CSRFToken': csrftoken },
+        success: function (response) {
+            delete window.context_data[workspaceID];
+            removeOffcanvasWorkspaceAccordion(workspaceID);
+            if (Object.keys(window.context_data).length > 0) {
+                const workspace = window.context_data[Object.keys(window.context_data)[0]];
+                openWorkspace(workspace.workspace);
+                openWorkspaceAccordion(workspace.workspace);
+            }
+            else {
+                createWorkspace();
+            }
+            alert("Workspace deleted successfully");
+        },
+        error: function (response) {
+            alert(response.responseJSON.message);
+        }
+    });
+}
 /*=========================================================*/
 
 /*==================== Enable Auto-grow ====================*/
@@ -346,7 +364,7 @@ function chatSubmit(e) {
                     }
                 });
             }
-            if (response.data.conversation) {
+            if (window.context_data[currentWorkspaceId].workspace_chat) {
                 window.context_data[currentWorkspaceId].workspace_chat.push({
                     query: message,
                     response: response.data.chat_response
@@ -401,8 +419,10 @@ function initializeWorkspace(key = null) {
     if (key == null) {
         const firstKey = Object.keys(window.context_data)[0];
         openWorkspace(firstKey);
+        openWorkspaceAccordion(firstKey);
     } else {
         openWorkspace(key);
+        openWorkspaceAccordion(key);
     }
 }
 
@@ -416,20 +436,42 @@ function convertToLocalDateTime(date) {
     return `${func.day} ${func.month} ${func.year} ${func.hour}:${func.minute}`;
 }
 
-function updateOffcanvasWorkspace(workspace) {
-    const createdAt = convertToLocalDateTime(workspace.created_at);
-    const updatedAt = convertToLocalDateTime(workspace.updated_at);
+function openWorkspaceAccordion(workspaceID) {
+    $('.accordion-collapse').removeClass('show');
+    $('.accordion-button').addClass('collapsed').attr('aria-expanded', 'false');
+    const newAccordionId = `offcanvas-workspace-${workspaceID}`;
+    $(`#${newAccordionId}`).addClass('show');
+    $(`#heading-${workspaceID} .accordion-button`)
+        .removeClass('collapsed')
+        .attr('aria-expanded', 'true');
+    document.getElementById(`heading-${workspaceID}`).scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
+}
+
+function removeOffcanvasWorkspaceAccordion(workspaceID) {
+    $(`#heading-${workspaceID}`).parent().remove();
+}
+
+function updateOffcanvasWorkspace(workspaceID) {
+    const workspace = window.context_data[workspaceID];
+    const title = workspace.workspace_name ? workspace.workspace_name : workspaceID;
+    const createdAt = convertToLocalDateTime(workspace.workspace_created_at);
+    const updatedAt = convertToLocalDateTime(workspace.workspace_updated_at);
     $('#accordian-workspace').append(`
     <div class="accordion-item">
-        <h2 class="accordion-header" id="heading-${workspace.id}">
+        <h2 class="accordion-header" id="heading-${workspace.workspace}">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                data-bs-target="#offcanvas-workspace-${workspace.id}" aria-expanded="false"
-                aria-controls="offcanvas-workspace-${workspace.id}">
-                Workspace ${$('#accordian-workspace').children().length + 1}
+                data-bs-target="#offcanvas-workspace-${workspace.workspace}" aria-expanded="false"
+                aria-controls="offcanvas-workspace-${workspace.workspace}">
+                <span class="workspace-accordion-title">
+                    Workspace ${$('#accordian-workspace').children().length + 1} - ${title}
+                </span>
             </button>
         </h2>
-        <div id="offcanvas-workspace-${workspace.id}" class="accordion-collapse collapse"
-            aria-labelledby="heading-${workspace.id}" data-bs-parent="#accordian-workspace">
+        <div id="offcanvas-workspace-${workspace.workspace}" class="accordion-collapse collapse"
+            aria-labelledby="heading-${workspace.workspace}" data-bs-parent="#accordian-workspace">
             <div class="accordion-body">
                 <strong>Workspace meta data</strong>
                 <hr class="mt-0">
@@ -444,34 +486,30 @@ function updateOffcanvasWorkspace(workspace) {
                         <tbody>
                             <tr>
                                 <td>ID</td>
-                                <td><code id=td-id-${workspace.id}>${workspace.id}</code></td>
+                                <td><code id=td-id-${workspace.workspace}>${workspace.workspace}</code></td>
                             </tr>
                             <tr>
                                 <td>Total Conversation</td>
-                                <td><code id=td-conversation-${workspace.id}>${workspace.conversation ? workspace.conversation.length : 0}</code></td>
+                                <td><code id=td-conversation-${workspace.workspace}>${workspace.conversation ? workspace.conversation.length : 0}</code></td>
                             </tr>
                             <tr>
                                 <td>Total Files</td>
-                                <td><code id=td-files-${workspace.id}>${workspace.files ? workspace.files.length : 0}</code></td>
+                                <td><code id=td-files-${workspace.workspace}>${workspace.files ? workspace.files.length : 0}</code></td>
                             </tr>
                             <tr>
                                 <td>Updated At</td>
-                                <td><code id=td-updated-at-${workspace.id}>${updatedAt}</code></td>
+                                <td><code id=td-updated-at-${workspace.workspace}>${updatedAt}</code></td>
                             </tr>
                             <tr>
                                 <td>Created At</td>
-                                <td><code id=td-created-at-${workspace.id}>${createdAt}</code></td>
+                                <td><code id=td-created-at-${workspace.workspace}>${createdAt}</code></td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
                 <div class="d-flex justify-content-around align-items-center">
-                    <a class="btn btn-primary workspace-open-btn" onclick="openWorkspace('${workspace.id}')">Open</a>
-                    <form  action="{% url 'comfychat:delete_workspace' %}" method="post">
-                        {% csrf_token %}
-                        <input type="hidden" name="workspace_id" value="${workspace.id}">
-                        <button type="submit" class="btn btn-danger workspace-delete-btn">Delete</button>
-                    </form>
+                    <a class="btn btn-primary workspace-open-btn" onclick="openWorkspace('${workspace.workspace}')">Open</a>
+                    <a class="btn btn-danger workspace-open-btn" onclick="deleteWorkspace('${workspace.workspace}')">Delete</a>
                 </div>
             </div>
         </div>

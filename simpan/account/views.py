@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.utils.http import urlencode
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 
 
 def login_view(request):
@@ -23,3 +23,9 @@ def login_view(request):
         messages.success(request, "Login successful. Welcome to SimPan.")
         return redirect(next_url)
     return render(request, 'account/login.html', {'next_url': next_url})
+
+
+def logout_view(request):
+    logout(request)
+    messages.success(request, "Logout successful. You have been logged out.")
+    return redirect(reverse("home:home"))

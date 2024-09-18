@@ -28,7 +28,7 @@
 
 <body>
    {% if messages %}
-   <div class="messages">
+   <div class="messages" id="main-messages">
       {% for message in messages %}
       <div class="alert alert-dismissible fade show mt-0 messages-{{ message.tags }}" role="alert">
          {{ message }}

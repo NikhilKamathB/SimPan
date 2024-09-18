@@ -21,6 +21,21 @@ function getCookie(name) {
     return cookieValue;
 }
 
+// Show message
+function showMessage(message, type) {
+    let mainMessageContainer = document.body.querySelector('#main-messages');
+    if (mainMessageContainer) {
+        mainMessageContainer.remove();
+    }
+    mainMessageContainer = document.createElement('div');
+    mainMessageContainer.append(`
+        <div class="alert alert-dismissible fade show mt-0 messages-${type}" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    `);
+}
+
 // Render PDF
 function renderPDF(url, divID) {
     let pdf = null;
@@ -223,5 +238,6 @@ const VehicleType = {
 // Global scoped
 window.getCookie = getCookie;
 window.renderPDF = renderPDF;
+window.showMessage = showMessage;
 
 export { getCookie, VehicleType };
