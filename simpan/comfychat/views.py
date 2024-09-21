@@ -12,7 +12,7 @@ def index(request):
         login_url = reverse("account:login")
         return redirect(f"{login_url}?{urlencode({'next': reverse("comfychat:comfychat")})}")
     workspace_dict = {}
-    workspaces = Workspace.objects.prefetch_related("workspace_files").filter(user=request.user)
+    workspaces = Workspace.objects.prefetch_related("workspace_files").filter(user=request.user).order_by("-updated_at")
     if workspaces.count() == 0:
         workspace = Workspace.objects.create(user=request.user)
     for workspace in workspaces:

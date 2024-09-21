@@ -9,7 +9,6 @@
 !**/static/**
 **/static/*/litegraph*
 
-
 ### Django ###
 *.log
 *.pot

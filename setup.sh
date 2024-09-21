@@ -41,11 +41,11 @@ echo "Setting up PDF.js..."
         echo "You are running on macOS. Installing dependencies..."
         brew install pkg-config cairo pango libpng jpeg giflib librsvg pixman
     fi
-    npm ci
+    npm install
     npx gulp generic
 )
 
-# 5. Run Django specefics
+# 5. Run Django specifics
 echo "Running Django specifics..."
 (
     cd ./simpan

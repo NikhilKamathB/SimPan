@@ -333,6 +333,14 @@
     border-radius: var(--default-border-squared-radius);
 }
 
+#text-layer span {
+    cursor: text;
+    user-select: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+}
+
 @keyframes bounce {
     0% {
         transform: translateY(0px);

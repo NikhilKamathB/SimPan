@@ -58,7 +58,7 @@ function renderPDF(url, divID) {
     const mainContent = document.createElement('div');
     mainContent.classList.add('pdf-main-content', 'd-flex', 'justify-content-center', 'align-items-center');
     pdfViewerWrapper.appendChild(mainContent);
-
+    
     // Controls
     const controls = document.createElement('div');
     controls.classList.add('pdf-controls');
@@ -69,10 +69,29 @@ function renderPDF(url, divID) {
     `;
     mainContent.appendChild(controls);
 
+    // Create a container for the canvas and text layer
+    const canvasContainer = document.createElement('div');
+    canvasContainer.style.position = 'relative';
+    canvasContainer.style.width = '100%';
+    canvasContainer.style.height = '100%';
+    mainContent.appendChild(canvasContainer);
+
     // Canvas
     const canvas = document.createElement('canvas');
     canvas.classList.add('pdf-canvas');
-    mainContent.appendChild(canvas);
+    canvasContainer.appendChild(canvas);
+
+    // Text layer
+    const textLayer = document.createElement('div');
+    textLayer.id = 'text-layer';
+    textLayer.style.position = 'absolute';
+    textLayer.style.left = '0';
+    textLayer.style.top = '0';
+    textLayer.style.right = '0';
+    textLayer.style.bottom = '0';
+    textLayer.style.overflow = 'hidden';
+    textLayer.style.pointerEvents = 'none';
+    canvasContainer.appendChild(textLayer);
 
     // Buttons
     const prevButton = controls.querySelector('#prev-page');
@@ -85,31 +104,76 @@ function renderPDF(url, divID) {
         isRendering = true;
         pdf.getPage(pageNumber).then(function (page) {
             const context = canvas.getContext('2d');
-            // Get the dimensions of the parent element
-            const parentWidth = mainContent.clientWidth;
-            const parentHeight = mainContent.clientHeight;
-            // Get the original dimensions of the PDF page
-            const originalViewport = page.getViewport({ scale: 1.10 });
-            // Calculate the scale to fit the canvas to its parent
+            const parentWidth = canvasContainer.clientWidth;
+            const parentHeight = canvasContainer.clientHeight;
+            const originalViewport = page.getViewport({ scale: 1 });
             const scaleX = parentWidth / originalViewport.width;
             const scaleY = parentHeight / originalViewport.height;
             const scale = Math.min(scaleX, scaleY);
             const viewport = page.getViewport({ scale: scale });
+
             canvas.height = viewport.height;
             canvas.width = viewport.width;
+            canvasContainer.style.width = `${viewport.width}px`;
+            canvasContainer.style.height = `${viewport.height}px`;
+
             const renderContext = {
                 canvasContext: context,
-                viewport: viewport
+                viewport: viewport,
             };
-            page.render(renderContext).promise.then(() => {
-                currentPage = pageNumber;
-                pageNum.textContent = currentPage;
-                prevButton.classList.toggle('disabled', currentPage <= 1);
-                nextButton.classList.toggle('disabled', currentPage >= pdf.numPages);
-                isRendering = false;
-                highlightThumbnail(pageNumber);
-                scrollThumbnailIntoView(pageNumber);
-            });
+
+            // Clear and set up text layer
+            textLayer.innerHTML = '';
+            textLayer.style.width = `${viewport.width}px`;
+            textLayer.style.height = `${viewport.height}px`;
+
+            const renderTask = page.render(renderContext);
+            const textContent = page.getTextContent();
+
+            Promise.all([renderTask.promise, textContent])
+                .then(([_, textContent]) => {
+                    const textItems = textContent.items;
+                    const textLayerFrag = document.createDocumentFragment();
+
+                    textItems.forEach(function (item) {
+                        const tx = pdfjsLib.Util.transform(viewport.transform, item.transform);
+
+                        const fontHeight = Math.sqrt((tx[2] * tx[2]) + (tx[3] * tx[3]));
+                        const divLeft = Math.floor(tx[4]);
+                        const divTop = Math.floor(tx[5] - fontHeight);
+                        const divWidth = Math.max(1, Math.ceil(item.width * viewport.scale));
+                        const divHeight = Math.max(1, Math.ceil(fontHeight));
+
+                        const textElement = document.createElement('span');
+                        textElement.textContent = item.str;
+                        Object.assign(textElement.style, {
+                            left: `${divLeft}px`,
+                            top: `${divTop}px`,
+                            fontSize: `${Math.floor(fontHeight)}px`,
+                            fontFamily: item.fontName,
+                            width: `${divWidth}px`,
+                            height: `${divHeight}px`,
+                            position: 'absolute',
+                            whiteSpace: 'pre',
+                            transformOrigin: '0% 0%',
+                            transform: `scaleX(${viewport.scale})`,
+                            color: 'transparent',
+                            background: 'rgba(255, 255, 0, 0.8)',
+                        });
+
+                        textLayerFrag.appendChild(textElement);
+                    });
+
+                    textLayer.appendChild(textLayerFrag);
+
+                    currentPage = pageNumber;
+                    pageNum.textContent = currentPage;
+                    prevButton.classList.toggle('disabled', currentPage <= 1);
+                    nextButton.classList.toggle('disabled', currentPage >= pdf.numPages);
+                    isRendering = false;
+                    highlightThumbnail(pageNumber);
+                    scrollThumbnailIntoView(pageNumber);
+                });
         });
     }
 

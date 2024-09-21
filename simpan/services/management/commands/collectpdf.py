@@ -22,10 +22,10 @@ class Command(BaseCommand):
         try:
             LOGGER.info("Copying `PDF.js` build items to `settings.STATIC_BASE`")
             os.makedirs(os.path.join(settings.BASE_DIR, settings.STATIC_BASE), exist_ok=True)
-            # Copy build js files
+            # Copy pdf - build js files
             shutil.copytree(
                 os.path.join(settings.SUBMODULES_DIR, settings.PDF_DIR, "build", "generic", "build"),
-                os.path.join(settings.BASE_DIR, settings.STATIC_BASE, "js"),  dirs_exist_ok=True
+                os.path.join(settings.BASE_DIR, settings.STATIC_BASE, "js"), dirs_exist_ok=True
             )
         except Exception as e:
             LOGGER.error(f"Error copying `PDF.js` statics to `settings.STATIC_BASE`: {e}")
