@@ -58,7 +58,7 @@ function renderPDF(url, divID) {
     const mainContent = document.createElement('div');
     mainContent.classList.add('pdf-main-content', 'd-flex', 'justify-content-center', 'align-items-center');
     pdfViewerWrapper.appendChild(mainContent);
-    
+
     // Controls
     const controls = document.createElement('div');
     controls.classList.add('pdf-controls');
@@ -144,24 +144,27 @@ function renderPDF(url, divID) {
                         const divWidth = Math.max(1, Math.ceil(item.width * viewport.scale));
                         const divHeight = Math.max(1, Math.ceil(fontHeight));
 
-                        const textElement = document.createElement('span');
-                        textElement.textContent = item.str;
-                        Object.assign(textElement.style, {
+                        // Create a separate element for highlighting
+                        const highlightElement = document.createElement('div');
+                        Object.assign(highlightElement.style, {
+                            position: 'absolute',
                             left: `${divLeft}px`,
                             top: `${divTop}px`,
-                            fontSize: `${Math.floor(fontHeight)}px`,
-                            fontFamily: item.fontName,
                             width: `${divWidth}px`,
                             height: `${divHeight}px`,
-                            position: 'absolute',
-                            whiteSpace: 'pre',
-                            transformOrigin: '0% 0%',
-                            transform: `scaleX(${viewport.scale})`,
-                            color: 'transparent',
-                            background: 'rgba(255, 255, 0, 0.8)',
                         });
-
-                        textLayerFrag.appendChild(textElement);
+                        // Create a transparent text element under span tag to make it selectable
+                        const transparentTextSpan = document.createElement('span');
+                        transparentTextSpan.textContent = item.str;
+                        Object.assign(transparentTextSpan.style, {
+                            position: 'absolute',
+                            left: `${divLeft}px`,
+                            top: `${divTop}px`,
+                            fontFamily: item.fontName,
+                            fontSize: `${Math.floor(fontHeight)}px`,
+                        });
+                        textLayerFrag.appendChild(transparentTextSpan);
+                        textLayerFrag.appendChild(highlightElement);
                     });
 
                     textLayer.appendChild(textLayerFrag);

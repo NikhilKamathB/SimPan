@@ -334,8 +334,11 @@
 }
 
 #text-layer span {
+    color: transparent;
     cursor: text;
+    pointer-events: all;
     user-select: text;
+    white-space: pre;
     -webkit-user-select: text;
     -moz-user-select: text;
     -ms-user-select: text;
