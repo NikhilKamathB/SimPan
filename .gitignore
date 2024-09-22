@@ -8,6 +8,8 @@
 !**/backup/**
 !**/static/**
 **/static/*/litegraph*
+**/static/*/pdf*mjs
+**/static/*/pdf*map
 
 ### Django ###
 *.log
