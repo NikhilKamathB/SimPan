@@ -304,6 +304,7 @@ function generateInitialChatbotBody(jsonObject) {
         const botIcon = '<i class="fa-solid fa-robot chatbot-profile-bot"></i>';
         const userIcon = '<i class="fa-solid fa-user chatbot-profile-user"></i>';
         jsonObject.forEach((message, index) => {
+            console.log(message.response);
             var chatbotBody = `
             <div class="chatbot-body-text-user" id="section">
                 <div class="chatbot-body-text">
@@ -314,11 +315,12 @@ function generateInitialChatbotBody(jsonObject) {
             <div class="chatbot-body-text-bot" id="section">
                 ${botIcon}
                 <div class="chatbot-body-text">
-                    <p class="chatbot-body-text-p-bot">${message.response}</p>
+                    <p class="chatbot-body-text-p-bot"></p>
                 </div>
             </div>
         `
             $('#chatbot-body').append(chatbotBody);
+            $('.chatbot-body-text-p-bot').last().append(message.response);
         });
         resetChatbotTextarea();
     }
