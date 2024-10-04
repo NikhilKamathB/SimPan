@@ -1,3 +1,4 @@
+from bs4 import BeautifulSoup
 from markdown import markdown
 from rest_framework import status
 from django.http import JsonResponse
@@ -5,9 +6,12 @@ from rest_framework import viewsets, mixins
 from django.contrib.auth.models import User
 from django.core.exceptions import BadRequest
 from drf_spectacular.types import OpenApiTypes
-from rest_framework.decorators import api_view, parser_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.authentication import SessionAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
+from rest_framework.decorators import api_view, parser_classes, authentication_classes, permission_classes
 from db.models import Workspace, WorkspaceStorage
 from services.serializers import UserSerializer, WorkspaceSerializer
 from services.validators import APIResponse, ChatResponse, BaseFileStruct, BaseErrorStruct
@@ -97,6 +101,8 @@ from services.validators import APIResponse, ChatResponse, BaseFileStruct, BaseE
         ),
     ],
 )
+@authentication_classes([JWTAuthentication, SessionAuthentication])
+@permission_classes([IsAuthenticated])
 @api_view(['POST'])
 @parser_classes([MultiPartParser, FormParser])
 def chat(request):
@@ -117,7 +123,12 @@ def chat(request):
                 workspace=workspace_obj, file=f).save()
         response = query
         response_html = markdown(response)
-        conversation["response"] = response
+        soup = BeautifulSoup(response_html, 'html.parser')
+        if soup.find_all() == [soup.p]:
+            fomatted_response = response_html
+        else:
+            fomatted_response = f'<div class="d-flex justify-content-start align-items-center chatbot-body-text-response-container">{response_html}</div>'
+        conversation["response"] = fomatted_response
         if workspace_obj.conversation:
             workspace_obj.conversation.append(conversation)
         else:
@@ -137,7 +148,7 @@ def chat(request):
                 success=True, message="Chat response generated successfully",
                 data=ChatResponse(
                     workspace_id=str(workspace_obj.id),
-                    chat_response=response_html,
+                    chat_response=fomatted_response,
                     files=files
                 ).model_dump(),
             ).model_dump(),
@@ -154,11 +165,12 @@ def chat(request):
         )
 
 
-
 class UserViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    authentication_classes = [JWTAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
 
     @extend_schema(
         summary="List all users",
@@ -203,6 +215,8 @@ class WorkspaceViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.Cr
 
     queryset = Workspace.objects.all()
     serializer_class = WorkspaceSerializer
+    authentication_classes = [JWTAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
 
     @extend_schema(
         summary="List all workspaces",
@@ -302,8 +316,8 @@ class WorkspaceViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.Cr
             return JsonResponse(
                 APIResponse(
                     success=True, message="Workspace create API",
-                data=response.data.serializer.data,
-            ).model_dump(), status=response.status_code)
+                    data=response.data.serializer.data,
+                ).model_dump(), status=response.status_code)
         except Exception as e:
             return JsonResponse(
                 APIResponse(

@@ -259,7 +259,7 @@ function generateChatbotBodyLoader(type = "bot") {
             <div>
                 ${icon}
                 <div class="chatbot-body-text">
-                    <div class="chatbot-body-text-loader">
+                    <div class="d-flex chatbot-body-text-loader">
                         <span></span>
                         <span></span>
                         <span></span>
@@ -328,10 +328,12 @@ function generateInitialChatbotBody(jsonObject) {
     }
 }
 
-function chatSubmit(e) {
+function chatSubmit(e, message = null) {
     e.preventDefault();
     const csrftoken = window.getCookie('csrftoken');
-    var message = $('#chatbot-textarea').val();
+    if (message == null) {
+        message = $('#chatbot-textarea').val();
+    }
     if (message.trim() == '') {
         return false;
     }
@@ -508,8 +510,8 @@ function updateOffcanvasWorkspace(workspaceID) {
                     </table>
                 </div>
                 <div class="d-flex justify-content-around align-items-center">
-                    <a class="btn btn-primary workspace-open-btn" onclick="openWorkspace('${workspace.workspace}')">Open</a>
-                    <a class="btn btn-danger workspace-open-btn" onclick="deleteWorkspace('${workspace.workspace}')">Delete</a>
+                    <a class="btn btn-primary" onclick="openWorkspace('${workspace.workspace}')">Open</a>
+                    <a class="btn btn-danger" onclick="deleteWorkspace('${workspace.workspace}')">Delete</a>
                 </div>
             </div>
         </div>

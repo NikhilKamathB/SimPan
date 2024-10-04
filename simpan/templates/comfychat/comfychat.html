@@ -12,11 +12,11 @@
 
 {% block body %}
 
-<div class="container d-flex justify-content-center align-items-center main-container">
-    <div class="row main-container-row">
+<div class="justify-content-center align-items-center main-container mx-2">
+    <div class="row main-container-row" id="main-container-row">
         <div class="col justify-content-evenly align-items-center p-2 workspace-container">
             <div class="d-flex justify-content-start align-items-center">
-                <a type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-ws"
+                <a class="mx-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-ws"
                     aria-controls="offcanvas-ws"><i class="uil uil-bars fa-custom-style fa-workspace"
                         id="fa-bars"></i></a>
                 <div class="d-flex justify-content-center align-items-center workspace-heading" id="workspace-heading">
@@ -26,14 +26,13 @@
             <div class="tab-content workspace-tab-content" id="workspace-tab-content">
             </div>
         </div>
-        <div class="col chat-container p-4">
+        <div class="col chat-container p-4" id="chat-container">
             <div class="chatbot-container-body" id="chatbot-container-body">
                 <div class="chatbot-body" id="chatbot-body"></div>
             </div>
             <div class="chatbot-form mt-3 mb-4 mx-2">
                 <div id="selected-files" class="selected-files mx-2"></div>
                 <form class="chobot-form-body">
-                    {% csrf_token %}
                     <div class="form-group">
                         <div class="input-group">
                             <span class="input-group-addon fa-paperclip-span" id="fa-paperclip-span">
@@ -118,8 +117,8 @@
                                 </table>
                             </div>
                             <div class="d-flex justify-content-around align-items-center">
-                                <a class="btn btn-primary workspace-open-btn" onclick="openWorkspace('{{ k }}')">Open</a>
-                                <a class="btn btn-danger workspace-open-btn" onclick="deleteWorkspace('{{ k }}')">Delete</a>
+                                <a class="btn btn-primary" onclick="openWorkspace('{{ k }}')">Open</a>
+                                <a class="btn btn-danger" onclick="deleteWorkspace('{{ k }}')">Delete</a>
                             </div>
                         </div>
                     </div>

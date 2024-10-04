@@ -41,6 +41,7 @@ function renderPDF(url, divID) {
     let pdf = null;
     let currentPage = 1;
     let isRendering = false;
+    let isTooltipVisible = false;
     const divContainer = document.getElementById(divID);
     divContainer.innerHTML = '';
 
@@ -92,6 +93,11 @@ function renderPDF(url, divID) {
     textLayer.style.overflow = 'hidden';
     textLayer.style.pointerEvents = 'none';
     canvasContainer.appendChild(textLayer);
+
+    // Tooltip element for selected text
+    const tooltip = document.createElement('div');
+    tooltip.classList.add('pdf-tooltip');
+    document.body.appendChild(tooltip);
 
     // Buttons
     const prevButton = controls.querySelector('#prev-page');
@@ -168,6 +174,7 @@ function renderPDF(url, divID) {
                     });
 
                     textLayer.appendChild(textLayerFrag);
+                    textLayer.addEventListener('mouseup', handleTextSelection);
 
                     currentPage = pageNumber;
                     pageNum.textContent = currentPage;
@@ -178,6 +185,128 @@ function renderPDF(url, divID) {
                     scrollThumbnailIntoView(pageNumber);
                 });
         });
+    }
+
+    // Function to handle text selection and show tooltip
+    function handleTextSelection(event) {
+        const selection = window.getSelection();
+        const selectedText = selection.toString();
+        if (selectedText.trim().length > 0 && isDescendant(textLayer, selection.anchorNode)) {
+            // There is selected text within textLayer
+            const range = selection.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            // Show the tooltip near the selected text
+            showTooltip(rect, selectedText);
+        } else {
+            // No text selected, or selection is outside textLayer
+            hideTooltip();
+        }
+    }
+
+    // Helper function to check if a node is a descendant of a parent node
+    function isDescendant(parent, child) {
+        let node = child;
+        while (node != null) {
+            if (node === parent) {
+                return true;
+            }
+            node = node.parentNode;
+        }
+        return false;
+    }
+
+    // Function to show the tooltip
+    function showTooltip(rect, selectedText) {
+        // Set the content of the tooltip
+        tooltip.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center pdf-tooltip-content">
+                <div class="text-align-justify pdf-tooltip-body m-2">
+                    <h5>Selected Text</h5>
+                    <p>${selectedText}</p>
+                </div>
+                <div class="text-align-justify pdf-tooltip-footer p-2 m-1">
+                    <p><strong>Your Query:</strong></p>
+                    <form class="chobot-form-body">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <textarea wrap="off" class="form-control chatbot-textarea" id="chatbot-textarea-tooltip"
+                                    oninput="auto_grow(this)">Explain this piece text to me.</textarea>
+                                <span class="input-group-addon fa-plane-send-span" id="fa-plane-send-span-tooltip">
+                                    <a class="send-button chatbot-submit" type="submit" id="chatbot-submit-tooltip">
+                                        <i class="fa-solid fa-paper-plane fa-custom-style" id="fa-plane-send-tooltip"></i>
+                                    </a>
+                                </span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+        // Position the tooltip near the selected text
+        let tooltipX = rect.left + window.scrollX;
+        let tooltipY = rect.bottom + window.scrollY;
+        // Show the tooltip to get its dimensions
+        tooltip.style.display = 'block';
+        tooltip.style.left = `${tooltipX}px`;
+        tooltip.style.top = `${tooltipY}px`;
+        // Adjust position if tooltip goes off-screen
+        let tooltipRect = tooltip.getBoundingClientRect();
+        const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+        const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+        if (tooltipRect.bottom > viewportHeight) {
+            // Tooltip goes off-screen below, position it above
+            tooltipY = rect.top + window.scrollY - tooltipRect.height;
+            tooltip.style.top = `${tooltipY}px`;
+            Object.assign(tooltipRect, tooltip.getBoundingClientRect());
+        }
+        // Recalculate tooltipRect after repositioning
+        tooltipRect = tooltip.getBoundingClientRect();
+        if (tooltipRect.top < 0) {
+            // Tooltip still goes off-screen above, center it vertically
+            tooltipY = window.scrollY + (viewportHeight - tooltipRect.height) / 2;
+            tooltip.style.top = `${tooltipY}px`;
+        }
+        // Adjust horizontal position if needed
+        if (tooltipRect.right > viewportWidth) {
+            // Tooltip goes off-screen to the right, adjust position
+            tooltipX = viewportWidth - tooltipRect.width - 10; // 10px padding
+            tooltip.style.left = `${tooltipX}px`;
+        } else if (tooltipRect.left < 0) {
+            // Tooltip goes off-screen to the left, adjust position
+            tooltipX = 10; // 10px padding
+            tooltip.style.left = `${tooltipX}px`;
+        }
+        // Added event listener to submit the form
+        const aButton = document.getElementById('chatbot-submit-tooltip');
+        aButton.addEventListener('click', function (e) {
+            var context = `
+            ${selectedText}
+            `;
+            var message = document.getElementById('chatbot-textarea-tooltip').value;
+            chatSubmit(e, `${context} ${message}`);
+            hideTooltip();
+        });
+        // Add event listener to detect clicks outside the tooltip
+        if (!isTooltipVisible) {
+            document.addEventListener('mousedown', outsideClickListener);
+            isTooltipVisible = true;
+        }
+    }
+
+    // Function to hide the tooltip
+    function hideTooltip() {
+        tooltip.style.display = 'none';
+        if (isTooltipVisible) {
+            document.removeEventListener('mousedown', outsideClickListener);
+            isTooltipVisible = false;
+        }
+    }
+
+    // Function to handle clicks outside the tooltip
+    function outsideClickListener(event) {
+        if (!tooltip.contains(event.target)) {
+            hideTooltip();
+        }
     }
 
     // Change page
@@ -293,6 +422,12 @@ function renderPDF(url, divID) {
     return function cleanup() {
         document.removeEventListener('keydown', handleKeyDown);
         mainContent.removeEventListener('wheel', handleScroll);
+        textLayer.removeEventListener('mouseup', handleTextSelection);
+        document.body.removeChild(tooltip);
+        if (isTooltipVisible) {
+            document.removeEventListener('mousedown', outsideClickListener);
+            isTooltipVisible = false;
+        }
     };
 }
 
