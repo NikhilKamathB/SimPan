@@ -52,6 +52,7 @@
     border-bottom: var(--default-border-thickness) solid var(--first-color);
 }
 
+.chatbot-textarea,
 .workspace-tab,
 .chatbot-container-body {
     scrollbar-width: none;
@@ -177,6 +178,7 @@
     border-radius: var(--default-border-radius) var(--default-border-radius) 0 0;
 }
 
+.chatbot-textarea::-webkit-scrollbar,
 .workspace-tab::-webkit-scrollbar,
 .chatbot-container-body::-webkit-scrollbar {
     display: none;
@@ -251,6 +253,11 @@
 
 .chatbot-body-text-response-container {
     max-width: 95%;
+    flex-direction: column;
+}
+
+.chatbot-body-text-response-container > * {
+    margin-bottom: 1rem;
 }
 
 .fa-plane-send-span,

@@ -127,7 +127,7 @@ def chat(request):
         if soup.find_all() == [soup.p]:
             fomatted_response = response_html
         else:
-            fomatted_response = f'<div class="d-flex justify-content-start align-items-center chatbot-body-text-response-container">{response_html}</div>'
+            fomatted_response = f'<div class="chatbot-body-text-response-container">{response_html}</div>'
         conversation["response"] = fomatted_response
         if workspace_obj.conversation:
             workspace_obj.conversation.append(conversation)

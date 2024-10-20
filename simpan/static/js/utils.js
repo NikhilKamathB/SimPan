@@ -283,7 +283,7 @@ function renderPDF(url, divID) {
             ${selectedText}
             `;
             var message = document.getElementById('chatbot-textarea-tooltip').value;
-            chatSubmit(e, `${context} ${message}`);
+            chatSubmit(e, `${context}\n\n${message}`);
             hideTooltip();
         });
         // Add event listener to detect clicks outside the tooltip
