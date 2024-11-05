@@ -91,6 +91,7 @@ INSTALLED_APPS = [
 
     # Apps
     'account.apps.AccountConfig',
+    'workspace.apps.WorkspaceConfig',
     'db.apps.DbConfig',
     'home.apps.HomeConfig',
     'comfyui.apps.ComfyuiConfig',

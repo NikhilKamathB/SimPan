@@ -18,13 +18,14 @@ from django.contrib import admin
 from django.conf import settings
 from django.urls import path, include
 from django.conf.urls.static import static
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 
 urlpatterns = [
     path('', include('home.urls')),
     path('account/', include('account.urls')),
     path('comfyui/', include('comfyui.urls')),
     path('comfychat/', include('comfychat.urls')),
-    path('services/', include('services.urls')),
+    path('api/', include('services.urls')),
     path('admin/', admin.site.urls),
 ]
 

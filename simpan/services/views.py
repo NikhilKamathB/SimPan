@@ -17,6 +17,7 @@ from services.serializers import UserSerializer, WorkspaceSerializer
 from services.validators import APIResponse, ChatResponse, BaseFileStruct, BaseErrorStruct
 
 
+# Chat API
 @extend_schema(
     summary="Chat API",
     description="Process a chat query and return a response",
@@ -80,7 +81,7 @@ from services.validators import APIResponse, ChatResponse, BaseFileStruct, BaseE
                 "message": "An error occurred",
                 "data": {
                     "code": 400,
-                    "message": "Bad Request"
+                    "message": "<MESSAGE>"
                 }
             },
             response_only=True,
@@ -93,7 +94,7 @@ from services.validators import APIResponse, ChatResponse, BaseFileStruct, BaseE
                 "message": "An error occurred",
                 "data": {
                     "code": 500,
-                    "message": "Internal Server Error"
+                    "message": "<MESSAGE>"
                 }
             },
             response_only=True,
@@ -165,6 +166,7 @@ def chat(request):
         )
 
 
+# User API
 class UserViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
 
     queryset = User.objects.all()
@@ -211,6 +213,7 @@ class UserViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
             ).model_dump(), status=response.status_code)
 
 
+# Workspace API
 class WorkspaceViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin):
 
     queryset = Workspace.objects.all()
@@ -302,7 +305,7 @@ class WorkspaceViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.Cr
                             "message": "An error occurred",
                             "data": {
                                 "code": 500,
-                                "message": "Internal Server Error"
+                                "message": "<MESSAGE>"
                             }
                         }
                     )
