@@ -11,10 +11,11 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.authentication import SessionAuthentication
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_spectacular.utils import extend_schema, OpenApiExample, OpenApiResponse
-from account.serializers import UserSerializer
 from base.validators import APIResponse, BaseErrorStruct
+from account.serializers import UserSerializer, CustomTokenObtainPairSerializer
 
 
+@extend_schema(tags=["User"])
 class UserViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
 
     queryset = User.objects.all()
@@ -84,11 +85,14 @@ class UserViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
                 ).model_dump(), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@extend_schema(tags=["Auth"])
 class CustomTokenViewBase(TokenObtainPairView):
 
     """
     Create a new token for authentication
     """
+
+    serializer_class = CustomTokenObtainPairSerializer
 
     @extend_schema(
         summary="Create a new token",
@@ -133,11 +137,6 @@ class CustomTokenViewBase(TokenObtainPairView):
         try:
             serializer.is_valid(raise_exception=True)
             response = Response(serializer.validated_data, status=status.HTTP_200_OK)
-            return JsonResponse(
-                APIResponse(
-                    success=True, message="Token create API",
-                    data=response.data,
-                ).model_dump(), status=response.status_code)
         except Exception as e:
             return JsonResponse(
                 APIResponse(
@@ -147,3 +146,8 @@ class CustomTokenViewBase(TokenObtainPairView):
                 ).model_dump(),
                 status=status.HTTP_400_BAD_REQUEST
             )
+        return JsonResponse(
+            APIResponse(
+                success=True, message="Token create API",
+                data=response.data,
+            ).model_dump(), status=response.status_code)

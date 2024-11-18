@@ -12,6 +12,7 @@ from base.validators import APIResponse, BaseErrorStruct
 from workspace.api.v1.serializers import StudioSerializerV1
 
 
+@extend_schema(tags=["Studio"])
 class StudioViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin):
 
     queryset = Studio.objects.all()
